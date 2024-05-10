@@ -4,6 +4,8 @@ import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
 import useWindowWidth from '../hooks/useWindowWidth';
+import { WindowWidthContext } from '../../context/WindowWidth';
+import { useContext } from 'react';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -38,7 +40,9 @@ export default function Posts() {
   const [startNumber, setStartNumber] = useState(0);
   
 
-  const { isSmallerDevice } = useWindowWidth();
+  const { isSmallerDevice } = useContext(WindowWidthContext);
+
+  console.log(isSmallerDevice,"isSmall");
 
   useEffect(() => {
     const fetchPost = async () => {
