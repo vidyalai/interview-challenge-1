@@ -12,6 +12,7 @@ const PostContainer = styled.div(() => ({
 
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
+ 
 }));
 
 const Carousel = styled.div(() => ({
@@ -35,6 +36,16 @@ const Image = styled.img(() => ({
   height: 'auto',
   maxHeight: '300px',
   padding: '10px',
+  
+}));
+
+const ProfileImage = styled.img(() => ({
+  width: '40px',
+  marginTop: '2%',
+  marginLeft: '10px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  filter: 'grayscale(100%)'
 }));
 
 const Content = styled.div(() => ({
@@ -56,20 +67,43 @@ const Button = styled.button(() => ({
 }));
 
 const PrevButton = styled(Button)`
+  position: absolute;
   left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 `;
 
 const NextButton = styled(Button)`
+  position: absolute;
   right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 `;
 
+const AuthorDetails = styled.div(()=>({
+  display: 'flex',
+  gap: '10%'
+}))
+
+const AuthorNameWrapper = styled.div(()=>({
+  display: 'flex',
+  flexDirection: 'column',
+  gap: '5%'
+}))
+
+const AuthorName = styled.div(()=>({
+  
+}))
+const AuthorEmail = styled.div(()=>({
+  
+}))
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +112,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -87,11 +121,25 @@ const Post = ({ post }) => {
   return (
     <PostContainer>
       <CarouselContainer>
+        
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
+            <div>
+
+            
+            <AuthorDetails>
+            <ProfileImage src={`https://api.dicebear.com/5.x/initials/svg?seed=${post.user.name}`} alt={post.title} />
+            <AuthorNameWrapper>
+              <AuthorName>{post?.user?.name}
+              </AuthorName>
+              <AuthorEmail>{post?.user?.email}</AuthorEmail>
+            </AuthorNameWrapper>
+            </AuthorDetails>
             <CarouselItem key={index}>
+              
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
+            </div>
           ))}
         </Carousel>
         <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>

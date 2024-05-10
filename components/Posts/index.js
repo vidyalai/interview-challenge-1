@@ -4,6 +4,8 @@ import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
 import useWindowWidth from '../hooks/useWindowWidth';
+import { WindowWidthContext } from '../../context/WindowWidth';
+import { useContext } from 'react';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -35,26 +37,34 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [startNumber, setStartNumber] = useState(0);
+  
 
-  const { isSmallerDevice } = useWindowWidth();
+  const { isSmallerDevice } = useContext(WindowWidthContext);
+
+  console.log(isSmallerDevice,"isSmall");
 
   useEffect(() => {
     const fetchPost = async () => {
       const { data: posts } = await axios.get('/api/v1/posts', {
         params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
       });
-      setPosts(posts);
+      setPosts(posts)
     };
 
     fetchPost();
   }, [isSmallerDevice]);
 
-  const handleClick = () => {
+  const handleClick =async () => {
     setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    const { data: posts } = await axios.get('/api/v1/posts', {
+      params: { start: isSmallerDevice?startNumber+5: startNumber+10 , limit: isSmallerDevice ? 5 : 10 },
+    });
+   
+    setPosts(((prev)=>([...prev, ...posts])));
+    setStartNumber((prev)=>(isSmallerDevice?prev+5: prev+10));
+    setIsLoading(false);
+    
   };
 
   return (
@@ -65,11 +75,13 @@ export default function Posts() {
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {
+        posts.length>0 &&
+        <div style={{ display: 'flex', justifyContent: 'center'}}>
         <LoadMoreButton onClick={handleClick} disabled={isLoading}>
           {!isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
-      </div>
+      </div>}
     </Container>
   );
 }
