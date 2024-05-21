@@ -12,23 +12,96 @@ const PostContainer = styled.div(() => ({
 
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
+  // border: '1px solid red',
 }));
 
 const Carousel = styled.div(() => ({
   display: 'flex',
-  overflowX: 'scroll',
+  overflowX: 'hidden',
   scrollbarWidth: 'none',
   msOverflowStyle: 'none',
   '&::-webkit-scrollbar': {
     display: 'none',
   },
   position: 'relative',
+  scrollSnapType: 'x mandatory',
 }));
 
 const CarouselItem = styled.div(() => ({
-  flex: '0 0 auto',
+  flex: '0 0 300px', 
   scrollSnapAlign: 'start',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  // border: '1px solid red',
+  // marginTop: '40px',
 }));
+
+const UserDetailsContainer = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  // backgroundColor: '#f0f0f0',
+  padding: '10px',
+  borderRadius: '5px',
+  marginBottom: '10px',
+  gap: '2px',
+}));
+
+const NameEmailContainer = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  // border: '1px solid #ccc',
+}));
+
+const Initials = styled.div(() => ({
+  backgroundColor: '#d0d0d0',
+  color: '#000',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  width: '60px',
+  height: '60px',
+  borderRadius: '50%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '5px',
+  // border: '1px solid #ccc',
+  marginLeft: '10px',
+
+}));
+
+const FullName = styled.div(() => ({
+  fontSize: '20px',
+  fontWeight: 'bold',
+  color: '#000',
+  // marginBottom: '5px',
+}));
+
+const Email = styled.div(() => ({
+  fontSize: '16px',
+  color: '#555',
+}));
+
+const getInitials = (name) => {
+  const nameParts = name.split(' ');
+  const initials = nameParts.map(part => part[0]).join('');
+  return initials.toUpperCase();
+};
+
+const UserDetails = ({ name, email }) => {
+  return (
+    <UserDetailsContainer>
+      <Initials>{getInitials(name)}</Initials>
+      <NameEmailContainer>
+        <FullName>{name}</FullName>
+        <Email>{email}</Email>
+      </NameEmailContainer>
+    </UserDetailsContainer>
+  );
+};
+
 
 const Image = styled.img(() => ({
   width: '280px',
@@ -46,13 +119,14 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  top: '50%',
+  transform: 'translateY(-50%)',
 }));
 
 const PrevButton = styled(Button)`
@@ -68,8 +142,9 @@ const Post = ({ post }) => {
 
   const handleNextClick = () => {
     if (carouselRef.current) {
+      const itemWidth = carouselRef.current.querySelector('div').clientWidth;
       carouselRef.current.scrollBy({
-        left: 50,
+        left: itemWidth,
         behavior: 'smooth',
       });
     }
@@ -77,8 +152,9 @@ const Post = ({ post }) => {
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
+      const itemWidth = carouselRef.current.querySelector('div').clientWidth;
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -itemWidth,
         behavior: 'smooth',
       });
     }
@@ -86,6 +162,7 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <UserDetails name={"Leanne Graham"} email={"Sincere@april.biz"} />
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -108,11 +185,14 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default Post;
