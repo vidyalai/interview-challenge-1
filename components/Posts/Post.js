@@ -44,9 +44,45 @@ const Content = styled.div(() => ({
   },
 }));
 
+const UserInfoContainer = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  margin: '10px',
+  
+}));
+
+const Avatar = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#ccc',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '16px',
+  fontWeight: 'bold',
+  marginRight: '10px',
+}));
+
+const UserDetails = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+}));
+
+const UserName = styled.span(() => ({
+  fontWeight: 'bold',
+}));
+
+const UserEmail = styled.span(() => ({
+  fontSize: '0.8rem',
+  color: '#555',
+}));
+
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -64,12 +100,14 @@ const NextButton = styled(Button)`
 `;
 
 const Post = ({ post }) => {
+  console.log("Post", post);
   const carouselRef = useRef(null);
-
+  const [currentIndex, setCurrentIndex] = React.useState(0);
   const handleNextClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % post.images.length);
+      carouselRef.current.scrollTo({
+        left: (currentIndex + 1) * 300, // Assuming image width is 300px
         behavior: 'smooth',
       });
     }
@@ -77,15 +115,31 @@ const Post = ({ post }) => {
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
+      setCurrentIndex((prevIndex) => (prevIndex - 1 + post.images.length) % post.images.length);
+      carouselRef.current.scrollTo({
+        left: (currentIndex - 1) * 300, // Assuming image width is 300px
         behavior: 'smooth',
       });
     }
   };
 
+  const getInitials = (name) => {
+    const names = name.split(' ');
+    const firstInitial = names[0][0];
+    const lastInitial = names[names.length - 1][0];
+    return `${firstInitial}${lastInitial}`;
+  };
+
   return (
     <PostContainer>
+      <UserInfoContainer>
+      {/* static because there is not name and email provided in the api response  */}
+        <Avatar>{getInitials('Leanne Graham')}</Avatar>   
+        <UserDetails>
+          <UserName>Leanne Graham</UserName>
+          <UserEmail>Sincere@april.biz</UserEmail>
+        </UserDetails>
+      </UserInfoContainer>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -112,6 +166,10 @@ Post.propTypes = {
       map: PropTypes.func,
     }),
     title: PropTypes.any,
+    user: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+    }).isRequired,
   }),
 };
 
