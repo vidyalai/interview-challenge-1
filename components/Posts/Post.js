@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -9,6 +10,31 @@ const PostContainer = styled.div(() => ({
   borderRadius: '5px',
   overflow: 'hidden',
 }));
+
+const UserContainer = styled.div(() => ({
+  display: "flex",
+  padding: "5px",
+  gap: "10px"
+}));
+
+const Logo = styled.div(() => ({
+  width: "50px",
+  height: "50px",
+  borderRadius: "50%",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: "gray",
+  color: "white",
+  fontWeight: "bold",
+  fontSize: "18px"
+}));
+
+const UserDetail = styled.div(() => ({
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-evenly"
+}))
 
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
@@ -46,7 +72,8 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -63,13 +90,29 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const getInitialLetters = (name) => {
+  const nameArray = name.split(' ');
+  const initial = nameArray[0][0] + nameArray[nameArray.length - 1][0];
+  return initial;
+}
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await axios.get(`/api/v1/users/user/${post.userId}`);
+      const initials = getInitialLetters(data.name);
+      setUser({initials, name: data.name, email: data.email});
+    }
+    fetchUser();
+  }, []);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +121,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -86,11 +129,18 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <UserContainer>
+        <Logo>{user?.initials}</Logo>
+        <UserDetail>
+          <p style={{fontWeight: 'bold'}}>{user?.name}</p>
+          <p>{user?.email}</p>
+        </UserDetail>
+      </UserContainer>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
-              <Image src={image.url} alt={post.title} />
+              <Image src={image} alt={post.title} />
             </CarouselItem>
           ))}
         </Carousel>
@@ -108,9 +158,7 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    images: PropTypes.arrayOf(PropTypes.string),
     title: PropTypes.any,
   }),
 };
