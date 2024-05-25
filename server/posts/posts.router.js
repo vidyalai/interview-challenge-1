@@ -15,7 +15,6 @@ router.get('/', async (req, res) => {
       images: data.map(photo => photo.url)
     }
   }));
-  console.log(postsWithImages);
   res.json(postsWithImages);
 });
 
