@@ -2,6 +2,16 @@ import PropTypes from 'prop-types';
 import React, { useRef } from 'react';
 import styled from '@emotion/styled';
 
+
+const ProfileImage = styled.img(() => ({
+  width: '40px',
+  marginTop: '2%',
+  marginLeft: '10px',
+  borderRadius: '50%',
+  overflow: 'hidden',
+  filter: 'grayscale(100%)'
+}));
+
 const PostContainer = styled.div(() => ({
   width: '300px',
   margin: '10px',
@@ -57,11 +67,32 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  top: 50%;
+  position: absolute;
+  transform: translateY(-10%);
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  top: 50%;
+  position: absolute;
+  transform: translateY(-10%);
 `;
+
+const WritterName = styled.div(()=>({
+}))
+const WritterEmail = styled.div(()=>({
+}))
+
+const Details = styled.div(()=>({
+  display: 'flex',
+  gap: '5%'
+}))
+
+const WritterWrapper = styled.div(()=>({
+  display: 'flex',
+  flexDirection: 'column',
+}))
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
@@ -69,7 +100,7 @@ const Post = ({ post }) => {
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +109,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -87,11 +118,25 @@ const Post = ({ post }) => {
   return (
     <PostContainer>
       <CarouselContainer>
+        
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
+            <div>
+
+            
+            <Details>
+            <ProfileImage src={`https://api.dicebear.com/5.x/initials/svg?seed=${post.user.name}`} alt={post.title} />
+            <WritterWrapper>
+              <WritterName>{post?.user?.name}
+              </WritterName>
+              <WritterEmail>{post?.user?.email}</WritterEmail>
+            </WritterWrapper>
+            </Details>
             <CarouselItem key={index}>
+              
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
+            </div>
           ))}
         </Carousel>
         <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>
