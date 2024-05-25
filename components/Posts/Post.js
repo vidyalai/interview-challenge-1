@@ -46,51 +46,100 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
-  fontSize: '20px',
+  fontSize: '24px',
   cursor: 'pointer',
   height: '50px',
+  width: '50px',
+  zIndex: '1',
+  opacity: '0.8',
+  transition: 'opacity 0.3s ease',
+  '&:hover': {
+    opacity: '1',
+  },
 }));
 
 const PrevButton = styled(Button)`
-  left: 10px;
+  left: 0;
 `;
 
 const NextButton = styled(Button)`
-  right: 10px;
+  right: 0;
 `;
+
+const UserContainer = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginBottom: '10px',
+}));
+
+const ProfileImage = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#008000',
+  color: '#fff',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: '15px',
+  marginLeft: '15px',
+  marginTop: '15px',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
+}));
+
+const UserName = styled.div(() => ({
+  fontSize: '16px',
+  fontWeight: 'bold',
+  marginTop: '15px',
+}));
+
+const UserEmail = styled.div(() => ({
+  fontSize: '12px',
+}));
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
-        behavior: 'smooth',
-      });
+      carouselRef.current.scrollLeft += carouselRef.current.offsetWidth;
     }
   };
-
+  
   const handlePrevClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
-        behavior: 'smooth',
-      });
+      carouselRef.current.scrollLeft -= carouselRef.current.offsetWidth;
     }
   };
+  
+
+  const name = post.user?.name || 'Unknown User';
+  const email = post.user?.email || 'unknown@example.com';
+
+  const nameParts = name.split(' ');
+  const initials = `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`;
 
   return (
     <PostContainer>
+      <UserContainer>
+        <ProfileImage>{initials}</ProfileImage>
+        <div>
+          <UserName>{name}</UserName>
+          <UserEmail>{email}</UserEmail>
+        </div>
+      </UserContainer>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
-              <Image src={image.url} alt={post.title} />
+              <Image src={image.url} alt={image.title} />
             </CarouselItem>
           ))}
         </Carousel>
@@ -107,11 +156,15 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
     }),
-    title: PropTypes.any,
+    images: PropTypes.arrayOf(PropTypes.shape({
+      url: PropTypes.string,
+      title: PropTypes.string,
+      body: PropTypes.string,
+    })),
   }),
 };
 
