@@ -1,118 +1,81 @@
-import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import axios from 'axios';
+import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
+import Post from './Post';
+import Container from '../common/Container';
 
-const PostContainer = styled.div(() => ({
-  width: '300px',
-  margin: '10px',
-  border: '1px solid #ccc',
-  borderRadius: '5px',
-  overflow: 'hidden',
-}));
+import { useWindowWidth } from '../ContextApi/useWindowWidth';
 
-const CarouselContainer = styled.div(() => ({
-  position: 'relative',
-}));
-
-const Carousel = styled.div(() => ({
+const PostListContainer = styled.div(() => ({
   display: 'flex',
-  overflowX: 'scroll',
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
-  '&::-webkit-scrollbar': {
-    display: 'none',
-  },
-  position: 'relative',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
 }));
 
-const CarouselItem = styled.div(() => ({
-  flex: '0 0 auto',
-  scrollSnapAlign: 'start',
-}));
-
-const Image = styled.img(() => ({
-  width: '280px',
-  height: 'auto',
-  maxHeight: '300px',
-  padding: '10px',
-}));
-
-const Content = styled.div(() => ({
-  padding: '10px',
-  '& > h2': {
-    marginBottom: '16px',
-  },
-}));
-
-const Button = styled.button(() => ({
-  position: 'absolute',
-  bottom: 0,
-  backgroundColor: 'rgba(255, 255, 255, 0.5)',
+const LoadMoreButton = styled.button(() => ({
+  padding: '10px 20px',
+  backgroundColor: '#007bff',
+  color: '#fff',
   border: 'none',
-  color: '#000',
-  fontSize: '20px',
+  borderRadius: 5,
   cursor: 'pointer',
-  height: '50px',
+  fontSize: 16,
+  marginTop: 20,
+  transition: 'background-color 0.3s ease',
+  fontWeight: 600,
+
+  '&:hover': {
+    backgroundColor: '#0056b3',
+  },
+  '&:disabled': {
+    backgroundColor: '#808080',
+    cursor: 'default',
+  },
 }));
 
-const PrevButton = styled(Button)`
-  left: 10px;
-`;
+export default function Posts() {
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [start, setStart] = useState(0);
+  const [hasMore, setHasMore] = useState(true); 
 
-const NextButton = styled(Button)`
-  right: 10px;
-`;
+  const isSmallerDevice = useWindowWidth();
+  const limit = isSmallerDevice ? 5 : 10;
 
-const Post = ({ post }) => {
-  const carouselRef = useRef(null);
-
-  const handleNextClick = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
-        behavior: 'smooth',
-      });
-    }
+  const fetchPost = async () => {
+    setIsLoading(true);
+    const { data: newPosts } = await axios.get('/api/v1/posts', {
+      params: { start, limit },
+    });
+    setPosts(posts => [...posts, ...newPosts]);
+    setStart(start => start + limit);
+    setHasMore(newPosts.length > 0); 
+    setIsLoading(false);
   };
 
-  const handlePrevClick = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
-        behavior: 'smooth',
-      });
-    }
+  useEffect(() => {
+    fetchPost(); 
+  }, []); 
+
+  const handleClick = () => {
+    fetchPost();
   };
 
   return (
-    <PostContainer>
-      <CarouselContainer>
-        <Carousel ref={carouselRef}>
-          {post.images.map((image, index) => (
-            <CarouselItem key={index}>
-              <Image src={image.url} alt={post.title} />
-            </CarouselItem>
-          ))}
-        </Carousel>
-        <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>
-        <NextButton onClick={handleNextClick}>&#10095;</NextButton>
-      </CarouselContainer>
-      <Content>
-        <h2>{post.title}</h2>
-        <p>{post.body}</p>
-      </Content>
-    </PostContainer>
+    <Container>
+      <PostListContainer>
+        {posts.map(post => (
+          <Post post={post} />
+        ))}
+      </PostListContainer>
+
+      {hasMore && ( 
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}
+          </LoadMoreButton>
+        </div>
+      )}
+    </Container>
   );
-};
-
-Post.propTypes = {
-  post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
-};
-
-export default Post;
+}
