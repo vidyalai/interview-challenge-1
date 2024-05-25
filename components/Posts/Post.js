@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -9,6 +10,31 @@ const PostContainer = styled.div(() => ({
   borderRadius: '5px',
   overflow: 'hidden',
 }));
+
+const UserContainer = styled.div(() => ({
+  display: "flex",
+  padding: "5px",
+  gap: "10px"
+}));
+
+const Logo = styled.div(() => ({
+  width: "50px",
+  height: "50px",
+  borderRadius: "50%",
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  backgroundColor: "gray",
+  color: "white",
+  fontWeight: "bold",
+  fontSize: "18px"
+}));
+
+const UserDetail = styled.div(() => ({
+  display: "flex",
+  flexDirection: "column",
+  justifyContent: "space-evenly"
+}))
 
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
@@ -103,6 +129,13 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <UserContainer>
+        <Logo>{user?.initials}</Logo>
+        <UserDetail>
+          <p style={{fontWeight: 'bold'}}>{user?.name}</p>
+          <p>{user?.email}</p>
+        </UserDetail>
+      </UserContainer>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -125,9 +158,7 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    images: PropTypes.arrayOf(PropTypes.shape({})),
     title: PropTypes.any,
   }),
 };
