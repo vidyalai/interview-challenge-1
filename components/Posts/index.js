@@ -3,7 +3,8 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+// import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../hooks/WindowWithContext';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -35,15 +36,33 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
-  const { isSmallerDevice } = useWindowWidth();
+  const [morePost, setMorePosts] = useState(true);
+  const [limit, setLimit] = useState(10);
+  const { isSmallerDevice } = useWindowWidth;
 
   useEffect(() => {
     const fetchPost = async () => {
       const { data: posts } = await axios.get('/api/v1/posts', {
         params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
       });
-      setPosts(posts);
+      setMorePosts(posts.length === (isSmallerDevice ? 5 : limit));
+
+      const { data: users } = await axios.get('/api/v1/users', {
+        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
+      });
+      const { data: photos } = await axios.get(
+        'https://jsonplaceholder.typicode.com/albums/1/photos',
+        {
+          params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
+        },
+      );
+      const postsWithPhotos = posts.map(post => ({
+        ...post,
+        photo: photos.find(photo => photo.id === post.id),
+        user: users.find(user => user.id === post.id),
+      }));
+
+      setPosts(postsWithPhotos);
     };
 
     fetchPost();
@@ -66,9 +85,11 @@ export default function Posts() {
       </PostListContainer>
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
+        {morePost && (
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}
+          </LoadMoreButton>
+        )}
       </div>
     </Container>
   );
