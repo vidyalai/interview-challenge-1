@@ -1,9 +1,9 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { WindowWidthContext } from '../store/WindowWidth';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -31,31 +31,33 @@ const LoadMoreButton = styled.button(() => ({
     cursor: 'default',
   },
 }));
-let INITIAL = true;
+
+const fetchPost = async (parameter, limit) => {
+  const { data } = await axios.get('/api/v1/posts', {
+    params: { start: parameter, limit: limit },
+  });
+  return data
+}
+
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [parameter, setParameter] = useState(0);
-  const { isSmallerDevice } = useWindowWidth();
+  const [limit, setLimit] = useState(5)
+  const { isSmallerDevice } = useContext(WindowWidthContext);
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data } = await axios.get('/api/v1/posts', {
-        params: { start: parameter, limit: isSmallerDevice ? 5 : 10 },
-      });
-      if (INITIAL) {
-        setPosts(data);
-        INITIAL = false;
-      } else {
-        setPosts(prevPosts => [...prevPosts, ...data]);
-      }
-    };
-    fetchPost();
-  }, [isSmallerDevice, parameter]);
+    setLimit(isSmallerDevice ? 5 : 10);
+    const fetchInitialPost = async () => {
+      const data = await fetchPost(0, isSmallerDevice ? 5 : 10);
+      setPosts(data);
+    }
+    fetchInitialPost();
+  }, [isSmallerDevice]);
 
   const handleClick = async () => {
     setIsLoading(true);
-    setParameter(prev => prev + (isSmallerDevice ? 5 : 10))
+    const data = await fetchPost(posts.length, limit);
+    setPosts(prev => [...prev, ...data]);
     setTimeout(() => {
       setIsLoading(false);
     }, 3000);
