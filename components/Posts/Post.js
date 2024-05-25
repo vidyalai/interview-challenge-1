@@ -63,13 +63,29 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const getInitialLetters = (name) => {
+  const nameArray = name.split(' ');
+  const initial = nameArray[0][0] + nameArray[nameArray.length - 1][0];
+  return initial;
+}
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data } = await axios.get(`/api/v1/users/user/${post.userId}`);
+      const initials = getInitialLetters(data.name);
+      setUser({initials, name: data.name, email: data.email});
+    }
+    fetchUser();
+  }, []);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +94,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
