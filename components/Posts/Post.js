@@ -113,6 +113,7 @@ const Post = ({ post }) => {
                 >
                   {initials}
                 </h1>
+
                 <div>
                   <h4>{post.user.name}</h4>
                   <p>{post.user.email}</p>
