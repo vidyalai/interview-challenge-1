@@ -44,15 +44,53 @@ const Content = styled.div(() => ({
   },
 }));
 
+const UserInfo = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center', // Align items vertically
+  padding: '10px',
+  borderBottom: '1px solid #ccc',
+}));
+
+const UserNameContainer = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column', // Stack items vertically
+  marginLeft: '10px', // Add some space between short name and full name
+}));
+
+const UserInitials = styled.div(({ theme }) => ({
+  width: '40px', // Adjusted size
+  height: '40px', // Adjusted size
+  borderRadius: '50%',
+  backgroundColor: '#555', // Dark grey color
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontSize: '18px', // Adjusted font size
+  color: '#fff',
+}));
+
+const UserName = styled.div(() => ({
+  fontWeight: 'bold',
+}));
+
+const Email = styled.div(() => ({
+  marginTop: '5px',
+}));
+
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  width: '50px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 const PrevButton = styled(Button)`
@@ -84,8 +122,20 @@ const Post = ({ post }) => {
     }
   };
 
+  const getInitials = name => {
+    const [firstName, lastName] = name.split(' ');
+    return `${firstName[0]}${lastName ? lastName[0] : ''}`;
+  };
+
   return (
     <PostContainer>
+      <UserInfo>
+        <UserInitials>{getInitials(post.user.name)}</UserInitials>
+        <UserNameContainer>
+          <UserName>{post.user.name}</UserName>
+          <Email>{post.user.email}</Email>
+        </UserNameContainer>
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,12 +157,18 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      }),
+    ).isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 };
 
 export default Post;

@@ -11,7 +11,7 @@ const axios = require('axios').default;
 async function fetchPosts(params) {
   const { start = 0, limit = 10 } = params || {};
   const { data: posts } = await axios.get(
-    'https://jsonplaceholder.typicode.com/posts?limit',
+    'https://jsonplaceholder.typicode.com/posts',
     {
       params: {
         _start: start,
@@ -20,7 +20,20 @@ async function fetchPosts(params) {
     },
   );
 
-  return posts;
+  // Fetch user data for each post
+  const userPromises = posts.map(post =>
+    axios.get(`https://jsonplaceholder.typicode.com/users/${post.userId}`),
+  );
+
+  const users = await Promise.all(userPromises);
+
+  // Attach user data to each post
+  const postsWithUsers = posts.map((post, index) => ({
+    ...post,
+    user: users[index].data,
+  }));
+
+  return postsWithUsers;
 }
 
 module.exports = { fetchPosts };
