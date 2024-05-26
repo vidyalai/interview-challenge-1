@@ -5,10 +5,11 @@ const Navbar = styled('nav')(() => ({
   backgroundColor: '#333',
   color: '#fff',
   width: '100%',
-  position: 'absolute',
+  position: 'fixed', // Changed from 'absolute' to 'fixed'
   top: 0,
   left: 0,
   zIndex: 1000,
+  padding: '10px 20px',
 }));
 
 const ListItem = styled('li')(() => ({
@@ -31,15 +32,20 @@ const TopNavbar = () => {
   return (
     <div>
       <Navbar>
-        <ul style={{}}>
+        <ul style={{ listStyleType: 'none', margin: 0, padding: 0 }}>
           <ListItem>
-            <Link href={'/'}>Home</Link>
+            <Link href="/">Home</Link>
           </ListItem>
           <ListItem>
-            <Link href={'/users'}>Users</Link>
+            <Link href="/users">Users</Link>
           </ListItem>
         </ul>
       </Navbar>
+      <div style={{ paddingTop: '60px' }}>
+        {' '}
+        {/* Adjust paddingTop to match navbar height */}
+        {/* The rest of your page content goes here */}
+      </div>
     </div>
   );
 };
