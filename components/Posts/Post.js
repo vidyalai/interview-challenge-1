@@ -47,6 +47,7 @@ const Content = styled.div(() => ({
 const Button = styled.button(() => ({
   position: 'absolute',
   bottom: 0,
+  top: '50%',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -64,12 +65,22 @@ const NextButton = styled(Button)`
 `;
 
 const Post = ({ post }) => {
+  let text = post.user.name;
+  let full_name = text.split(' ');
+  let initials = full_name[0][0];
+  if (text) {
+    if (full_name.length >= 2 && full_name[1]) {
+      initials += full_name[1][0];
+    }
+  } else {
+    initials = '';
+  }
   const carouselRef = useRef(null);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +89,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -90,6 +101,25 @@ const Post = ({ post }) => {
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
+              <div style={{ padding: '10px', display: 'flex' }}>
+                <h1
+                  style={{
+                    marginRight: '5px',
+                    background: 'gray',
+                    color: 'white',
+                    padding: '8px',
+                    borderRadius: '50%',
+                    fontSize: '18px',
+                  }}
+                >
+                  {initials}
+                </h1>
+
+                <div>
+                  <h4>{post.user.name}</h4>
+                  <p>{post.user.email}</p>
+                </div>
+              </div>
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
           ))}
