@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import {useWindowWidthContext} from '../hooks/useWindowWidth'
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -35,38 +35,49 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  // console.log(posts);
+  const { isSmallerDevice } = useWindowWidthContext();
 
-  const { isSmallerDevice } = useWindowWidth();
-
+  const [start, setStart] = useState(0); 
+  const [limit,setLimit]=useState(10);
+  const fetchPosts = async (params) => {
+    const { start = 0, limit = 10 } = params || {};
+    const { data: posts } = await axios.get('/api/v1/posts',
+      {
+        params: {
+          _start: start,
+          _limit: limit,
+        },
+      },
+    );
+    return posts;
+  };
+  const loadPosts = async (start, limit) => {
+    setIsLoading(true);
+    const newPosts = await fetchPosts({ start, limit });
+    setPosts(prevPosts => [...prevPosts, ...newPosts]);
+    setIsLoading(false);
+  };
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
-    };
-
-    fetchPost();
-  }, [isSmallerDevice]);
+    loadPosts(0, limit);
+  }, [limit, isSmallerDevice]);
 
   const handleClick = () => {
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    const newStart = start + limit;
+    setStart(newStart);
+    loadPosts(newStart, limit);
   };
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {posts.map((post,index) => (
+          <Post post={post} index={index} />
         ))}
       </PostListContainer>
-
+        
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+        <LoadMoreButton onClick={handleClick} disabled={isLoading||posts.length==0}>
           {!isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
       </div>
