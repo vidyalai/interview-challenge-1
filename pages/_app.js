@@ -1,8 +1,10 @@
 import React from 'react';
-
+import WindowSizeProvider from '../components/context/WindowSizeProvider';
 const App = ({ Component, pageProps }) => (
   <React.Fragment>
-    <Component {...pageProps} />
+    <WindowSizeProvider>
+      <Component {...pageProps} />
+    </WindowSizeProvider>
   </React.Fragment>
 );
 
