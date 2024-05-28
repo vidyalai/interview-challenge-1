@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import {useWindowWidth} from '../hooks/useWindowWidth';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -32,29 +32,51 @@ const LoadMoreButton = styled.button(() => ({
   },
 }));
 
+
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
   const { isSmallerDevice } = useWindowWidth();
+  const [start, setStart] = useState(0);
+  const [totalPosts, setTotalPosts] = useState(0);
+  const [remainData, setRemainData] = useState(true);
+  const limit = isSmallerDevice ? 5 : 10;
 
   useEffect(() => {
-    const fetchPost = async () => {
+    const fetchInitialPosts = async () => {
       const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
+        params: { start: 0, limit },
       });
       setPosts(posts);
+      setStart(posts.length);
+      setTotalPosts(posts.length);
     };
 
-    fetchPost();
+    fetchInitialPosts();
   }, [isSmallerDevice]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const { data: newPosts } = await axios.get('/api/v1/posts', {
+        params: { start, limit },
+      });
+
+      if (newPosts.length > 0) {
+        setPosts(prevPosts => [...prevPosts, ...newPosts]);
+        setStart(prevStart => prevStart + newPosts.length);
+        setTotalPosts(prevTotal => prevTotal + newPosts.length);
+      }
+
+      if (newPosts.length < limit) {
+        setRemainData(false);
+      }
+    } catch (error) {
+      console.error('Unableto load remaining posts:', error);
+    } finally {
       setIsLoading(false);
-    }, 3000);
+    }
   };
 
   return (
@@ -65,11 +87,16 @@ export default function Posts() {
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
+      {remainData
+       && 
+      (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}
+          </LoadMoreButton>
+        </div>
+      )
+      }
     </Container>
   );
 }
