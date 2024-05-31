@@ -1,6 +1,7 @@
-import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
+import PropTypes from 'prop-types';
+import React, { useEffect, useRef, useState } from 'react';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -9,6 +10,36 @@ const PostContainer = styled.div(() => ({
   borderRadius: '5px',
   overflow: 'hidden',
 }));
+
+const UserContainer = styled.div`
+  width: 100%;
+  height: 40px;
+  padding: 10px;
+  display: flex;
+  gap: 10px;
+
+  .pic-container {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: grey;
+    color: white;
+    text-align: center;
+    line-height: 40px;
+    font-weight: bold;
+    font-size: 1rem;
+    vertical-align: middle;
+  }
+  .info-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    .name {
+      font-weight: bolder;
+    }
+  }
+`;
 
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
@@ -57,19 +88,51 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  top: 50%;
+  transform: translate(0, -50%);
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  top: 50%;
+  transform: translate(0, -50%);
 `;
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [user, setUser] = useState({});
+
+  useEffect(() => {
+
+    const fetchUserData = async () => {
+      try {
+        const { data: userData } = await axios.get(
+          `/api/v1/users/${post.userId}`,
+        );
+          setUser(userData);
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+    fetchUserData();
+  }, [post.userId]);
+
+  const { name, email } = user;
+
+  const letters = name
+    ?.split(' ')
+    .map(word => word[0])
+    .join('');
 
   const handleNextClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
+      const scrollWidth = carouselRef.current.scrollWidth;
+      const clientWidth = carouselRef.current.clientWidth;
+      const maxScrollLeft = scrollWidth - clientWidth;
+      const scrollLeft = carouselRef.current.scrollLeft;
+      const nextScrollLeft = Math.min(scrollLeft + clientWidth, maxScrollLeft);
+      carouselRef.current.scrollTo({
+        left: nextScrollLeft,
         behavior: 'smooth',
       });
     }
@@ -77,8 +140,11 @@ const Post = ({ post }) => {
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
+      const scrollLeft = carouselRef.current.scrollLeft;
+      const clientWidth = carouselRef.current.clientWidth;
+      const nextScrollLeft = Math.max(scrollLeft - clientWidth, 0);
+      carouselRef.current.scrollTo({
+        left: nextScrollLeft,
         behavior: 'smooth',
       });
     }
@@ -86,6 +152,13 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <UserContainer>
+        <div className={'pic-container'}>{letters}</div>
+        <div className={'info-container'}>
+          <div className={'name'}>{name}</div>
+          <div>{email}</div>
+        </div>
+      </UserContainer>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,11 +180,14 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    body: PropTypes.any,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        map: PropTypes.func,
+      }),
+    ),
     title: PropTypes.any,
+    userId: PropTypes.any,
   }),
 };
 

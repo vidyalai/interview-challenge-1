@@ -1,9 +1,11 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
+import { WindowProvider } from '../components/context/WindowContext';
 
 const App = ({ Component, pageProps }) => (
-  <React.Fragment>
+  <WindowProvider>
     <Component {...pageProps} />
-  </React.Fragment>
+  </WindowProvider>
 );
 
 export default App;
