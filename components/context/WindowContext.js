@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react/prop-types */
+import React, { createContext, useEffect, useState } from 'react';
 
-function useWindowWidth() {
+export const WindowContext = createContext();
+
+export const WindowProvider = ({ children }) => {
   const [isSmallerDevice, setIsSmallerDevice] = useState(false);
 
   useEffect(() => {
@@ -17,7 +20,9 @@ function useWindowWidth() {
     };
   }, []);
 
-  return { isSmallerDevice };
-}
-
-export default useWindowWidth;
+  return (
+    <WindowContext.Provider value={{ isSmallerDevice }}>
+      {children}
+    </WindowContext.Provider>
+  );
+};
