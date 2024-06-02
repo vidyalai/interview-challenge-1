@@ -46,7 +46,7 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  bottom: 150,
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -65,29 +65,41 @@ const NextButton = styled(Button)`
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const imageWidth = 100; // Assuming each image has a width of 100px, adjust this value accordingly
 
   const handleNextClick = () => {
     if (carouselRef.current) {
+      const containerWidth = carouselRef.current.offsetWidth;
+      const scrollDistance = Math.min(containerWidth, imageWidth); // Ensure the scroll distance does not exceed the width of the container or an image
       carouselRef.current.scrollBy({
-        left: 50,
+        left: scrollDistance,
         behavior: 'smooth',
       });
+      setCurrentImageIndex(prevIndex =>
+        (prevIndex + 1) % post.images.length
+      );
     }
   };
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
+      const containerWidth = carouselRef.current.offsetWidth;
+      const scrollDistance = Math.min(containerWidth, imageWidth); // Ensure the scroll distance does not exceed the width of the container or an image
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -scrollDistance,
         behavior: 'smooth',
       });
+      setCurrentImageIndex(prevIndex =>
+        (prevIndex - 1 + post.images.length) % post.images.length
+      );
     }
   };
 
   return (
     <PostContainer>
+    
       <CarouselContainer>
-        <Carousel ref={carouselRef}>
+        <Carousel className="carousel" ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
               <Image src={image.url} alt={post.title} />

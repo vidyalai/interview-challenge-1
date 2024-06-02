@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../hooks/useWindowWidth';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -67,7 +67,8 @@ export default function Posts() {
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
         <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
+          
+          {posts>posts.length? 'no post': !isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
       </div>
     </Container>

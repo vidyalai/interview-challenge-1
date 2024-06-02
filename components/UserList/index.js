@@ -125,8 +125,7 @@ const withUserData = WrappedComponent =>
     }
   };
 
-class UserList extends Component {
-  render() {
+  function UserList(props) {
     const {
       users,
       columnFields,
@@ -134,40 +133,38 @@ class UserList extends Component {
       handleSort,
       sortColumn,
       sortDirection,
-    } = this.props;
+    } = props;
+  
     return (
       <div>
-        <Table>
+        <table>
           <thead>
             <tr>
-              {columnFields.map(field => {
-                return (
-                  <th key={field.value}>
-                    <div
-                      onClick={() => handleSort(field.value)}
-                      style={{ paddingBottom: 8 }}
-                    >
-                      {field.label}
-                      {sortColumn === field.value &&
-                        (sortDirection === 'asc' ? (
-                          <span className={'sort-icon'}>▲</span>
-                        ) : (
-                          <span className={'sort-icon'}>▼</span>
-                        ))}
-                    </div>
-
-                    {field.enableSearch ? (
-                      <input
-                        type={'text'}
-                        placeholder={`Search by ${field.label}`}
-                        name={field.value}
-                        onChange={handleOnSearch}
-                        style={{ padding: 6, width: 200 }}
-                      />
-                    ) : null}
-                  </th>
-                );
-              })}
+              {columnFields.map(field => (
+                <th key={field.value}>
+                  <div
+                    onClick={() => handleSort(field.value)}
+                    style={{ paddingBottom: 8 }}
+                  >
+                    {field.label}
+                    {sortColumn === field.value && (
+                      <span className={'sort-icon'}>
+                        {sortDirection === 'asc' ? '▲' : '▼'}
+                      </span>
+                    )}
+                  </div>
+  
+                  {field.enableSearch ? (
+                    <input
+                      type={'text'}
+                      placeholder={`Search by ${field.label}`}
+                      name={field.value}
+                      onChange={handleOnSearch}
+                      style={{ padding: 6, width: 200 }}
+                    />
+                  ) : null}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
@@ -179,11 +176,10 @@ class UserList extends Component {
               </tr>
             ))}
           </tbody>
-        </Table>
+        </table>
         <div></div>
       </div>
     );
   }
-}
-
+  
 export default withUserData(UserList);
