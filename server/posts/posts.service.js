@@ -23,4 +23,27 @@ async function fetchPosts(params) {
   return posts;
 }
 
-module.exports = { fetchPosts };
+/**
+ * Fetches photos for a given post ID from the JSONPlaceholder API.
+ *
+ * @param {number} postId - The ID of the post to fetch photos for.
+ * @returns {Promise<Array>} - A promise that resolves to an array of photos.
+ * @throws {Error} - If an error occurs during the API request.
+ */
+async function fetchAlbum(postId) {
+  let images;
+  try {
+    images = await axios.get(`https://jsonplaceholder.typicode.com/albums/${postId}/photos`);
+  } catch (error) {
+    if (error.code === 'ETIMEDOUT') {
+      // Retry the request once if it times out
+      images = await axios.get(`https://jsonplaceholder.typicode.com/albums/${postId}/photos`);
+    } else {
+      // Handle other errors by throwing them
+      throw error;
+    }
+  }
+  return images.data;
+}
+
+module.exports = { fetchPosts, fetchAlbum };
