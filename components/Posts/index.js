@@ -35,21 +35,34 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [ hideLoadMoreButton, setHideLoadMoreButton ] = useState(false);
 
   const { isSmallerDevice } = useWindowWidth();
 
+  const [page, setPage] = useState(0);
+
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchPosts = async () => {
+      try {
+        const { data: newPosts } = await axios.get('/api/v1/posts', {
+          params: { start: page * (isSmallerDevice ? 5 : 10), limit: isSmallerDevice ? 5 : 10 },
+        });
+
+        if (newPosts.length === 0) {
+          setHideLoadMoreButton(true);
+        }
+        setPosts([...posts, ...newPosts]);
+
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
-    fetchPost();
-  }, [isSmallerDevice]);
+    fetchPosts();
+  }, [page, isSmallerDevice]);
 
   const handleClick = () => {
+    setPage(page + 1);
     setIsLoading(true);
 
     setTimeout(() => {
@@ -65,11 +78,11 @@ export default function Posts() {
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {!hideLoadMoreButton && <div style={{ display: 'flex', justifyContent: 'center' }}>
         <LoadMoreButton onClick={handleClick} disabled={isLoading}>
           {!isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
-      </div>
+      </div>}
     </Container>
   );
 }

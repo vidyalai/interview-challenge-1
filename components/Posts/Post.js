@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef, useState } from 'react';
 import styled from '@emotion/styled';
+import Image from 'next/image';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -31,7 +32,7 @@ const CarouselItem = styled.div(() => ({
   scrollSnapAlign: 'start',
 }));
 
-const Image = styled.img(() => ({
+const ImageStyled = styled(Image)(() => ({
   width: '280px',
   height: 'auto',
   maxHeight: '300px',
@@ -67,6 +68,16 @@ const NextButton = styled(Button)`
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [loadedImages, setLoadedImages] = useState(post.images.slice(0, 2));
+  const [loadingStates, setLoadingStates] = useState(Array(loadedImages.length).fill(true));
+
+  const handleImageLoad = (index) => {
+    setLoadingStates(prevStates => {
+      const newStates = [...prevStates];
+      newStates[index] = false;
+      return newStates;
+    });
+  };
 
   const handleNextClick = () => {
     if (carouselRef.current) {
@@ -75,6 +86,7 @@ const Post = ({ post }) => {
         behavior: 'smooth',
       });
     }
+    loadMoreImages();
   };
 
   const handlePrevClick = () => {
@@ -86,33 +98,42 @@ const Post = ({ post }) => {
     }
   };
 
-  const [loadedImages, setLoadedImages] = useState(post.images.slice(0, 3));
-
-  useEffect(() => {
-    const loadMoreImages = async () => {
-      const remainingImages = post.images.slice(loadedImages.length);
-      if (remainingImages.length > 0) {
-        const nextImage = remainingImages[0];
-        setLoadedImages(prevImages => [...prevImages, nextImage]);
-      }
-    };
-      loadMoreImages();
-  }, [loadedImages, post.images, handleNextClick]);
+  const loadMoreImages = () => {
+    const remainingImages = post.images.slice(loadedImages.length, loadedImages.length + 1);// Get the remaining images to load
+    if (remainingImages.length > 0) {
+      // Get the next image to load
+      const nextImage = remainingImages[0];
+      setLoadedImages(prevImages => [...prevImages, nextImage]); // Add the next image to the loaded images array
+      setLoadingStates(prevStates => [...prevStates, true]); // Add a loading state for the next image
+    }
+  };
 
   return (
     <PostContainer>
       <CarouselContainer>
-        {loadedImages.length > 0 ? (
-          <Carousel ref={carouselRef}>
-            {loadedImages.map((image, index) => (
-              <CarouselItem key={index}>
-                <Image src={image.url} alt={post.title} />
-              </CarouselItem>
-            ))}
-          </Carousel>
-        ) : (
-          <p>Loading images...</p>
-        )}
+        <Carousel ref={carouselRef}>
+          {loadedImages.map((image, index) => (
+            <CarouselItem key={index}>
+              {loadingStates[index] && <p>Loading...</p>}
+              <ImageStyled
+                src={image.url}
+                alt={post.title}
+                width={300}
+                height={300}
+                onLoad={() => handleImageLoad(index)}
+                onError={(e) => {
+                  if (e.target.status === 504) {
+                    // on a timeout error remove the timed out image from loaded images and add it back to the end of the list for better image optimisation
+                    post.images.push(image);
+                    setLoadedImages(prevImages => prevImages.filter((_, i) => i !== index));
+                    setLoadingStates(prevStates => prevStates.filter((_, i) => i !== index));
+                    loadMoreImages();
+                  }
+                }}
+              />
+            </CarouselItem>
+          ))}
+        </Carousel>
         <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>
         <NextButton onClick={handleNextClick}>&#10095;</NextButton>
       </CarouselContainer>
