@@ -66,6 +66,40 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const Heading1=styled.div(()=>({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems:'center',
+}));
+const Data1=styled.div(()=>({
+  display: 'flex',
+  flexDirection: 'column',
+  margin:'2%'
+}));
+const Icon1=styled.div(()=>({
+  display: 'flex',
+  justifyContent:'center',
+  alignItems:'center',
+  width:'25%',
+  backgroundColor:'grey',
+  padding:'0',
+  borderRadius:'50%',
+  width:'60px',
+  height:'60px',
+  color:'white',
+  margin:'5px',
+  fontSize:'25px',
+  fontWeight:'bolder',
+  color:'white'
+}));
+const Name=styled.div(()=>({
+  display: 'flex',
+  fontWeight:'bolder'
+}));
+const Email=styled.div(()=>({
+  display: 'flex',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
   const [loadedImages, setLoadedImages] = useState(post.images.slice(0, 2));
@@ -110,6 +144,15 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <Heading1>
+        <Icon1 >
+          {post.user.name.split(' ').map((part, index, arr) => index === 0 || index === arr.length - 1 ? part[0] : '').join('').toUpperCase()}
+        </Icon1>
+        <Data1>
+          <Name >{post.user.name}</Name>
+          <Email>{post.user.email}</Email>
+        </Data1>
+      </Heading1>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {loadedImages.map((image, index) => (

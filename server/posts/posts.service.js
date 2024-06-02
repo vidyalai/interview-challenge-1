@@ -46,4 +46,29 @@ async function fetchAlbum(postId) {
   return images.data;
 }
 
-module.exports = { fetchPosts, fetchAlbum };
+/**
+ * Fetches user data from the JSONPlaceholder API based on the provided userId.
+ * @param {number} userId - The ID of the user to fetch data for.
+ * @returns {Promise<Object>} - A promise that resolves to the user data.
+ * @throws {Error} - If there is an error fetching the user data.
+ */
+async function fetchUserData(userId) {
+  try {
+    const { data: user } = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}`);
+    return user;
+  } catch (error) {
+    if (error.code === 'ETIMEDOUT') {
+      // Retry the request once if it times out
+      try {
+        const { data: user } = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}`);
+        return user;
+      } catch (error) {
+        throw new Error('Failed to fetch user data');
+      }
+    } else {
+      throw new Error('Failed to fetch user data');
+    }
+  }
+}
+
+module.exports = { fetchPosts, fetchAlbum, fetchUserData };
