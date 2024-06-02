@@ -1,27 +1,36 @@
 const express = require('express');
-const { fetchPosts } = require('./posts.service');
+const { fetchPosts, fetchAlbum, fetchUserData } = require('./posts.service');
 const { fetchUserById } = require('../users/users.service');
 
 const router = express.Router();
 
-router.get('/', async (req, res) => {
-  const posts = await fetchPosts();
+const prevUserData = [];
 
-  const postsWithImages = posts.reduce((acc, post) => {
-    // TODO use this route to fetch photos for each post
-    // axios.get(`https://jsonplaceholder.typicode.com/albums/${post.id}/photos`);
-    return [
-      ...acc,
-      {
-        ...post,
-        images: [
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
-        ],
-      },
-    ];
-  }, []);
+router.get('/', async (req, res) => {
+  const { start, limit } = req.query;
+  const posts = await fetchPosts({ start, limit });
+
+  const postsWithImages = await Promise.all(posts.map(async (post) => {
+    const images = await fetchAlbum(post.id);
+
+    // checking if the user data is already fetched
+    if (!prevUserData[post.userId]) {
+      const userData = await fetchUserData(post.userId);
+      prevUserData[post.userId] = userData;
+    }
+
+    const processedPost = {
+      ...post,
+      images: images.map(image => ({
+        url: image.thumbnailUrl,
+      })),
+      user : {
+        name: prevUserData[post.userId].name,
+        email: prevUserData[post.userId].email,
+      }
+    };
+    return processedPost;
+  }));
 
   res.json(postsWithImages);
 });

@@ -1,9 +1,9 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import useWindowWidth, { WindowWidthContext } from '../hooks/WindowWidthContext';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -34,27 +34,39 @@ const LoadMoreButton = styled.button(() => ({
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [ hideLoadMoreButton, setHideLoadMoreButton ] = useState(false);
 
-  const { isSmallerDevice } = useWindowWidth();
+  const { isSmallerDevice } = useContext(WindowWidthContext);
+
+  const [page, setPage] = useState(0);
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchPosts = async () => {
+      try {
+        const { data: newPosts } = await axios.get('/api/v1/posts', {
+          params: { start: page * (isSmallerDevice ? 5 : 10), limit: isSmallerDevice ? 5 : 10 },
+        });
+
+        setPosts([...posts, ...newPosts]);
+        setIsLoading(false);
+        if(page*(isSmallerDevice ? 5 : 10) === posts.length+(isSmallerDevice ? 5 : 10) && !hideLoadMoreButton) { // handles if no new posts are fetched on load more posts but still page is increased
+          setPage(page - 1)
+        }
+        if (newPosts.length === 0) {
+          setHideLoadMoreButton(true);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
-    fetchPost();
-  }, [isSmallerDevice]);
+    fetchPosts();
+  }, [page, isSmallerDevice]);
 
   const handleClick = () => {
+    setPage(page + 1);
     setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
   };
 
   return (
@@ -65,11 +77,11 @@ export default function Posts() {
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
+      {!hideLoadMoreButton && <div style={{ display: 'flex', justifyContent: 'center' }}>
         <LoadMoreButton onClick={handleClick} disabled={isLoading}>
           {!isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
-      </div>
+      </div>}
     </Container>
   );
 }
