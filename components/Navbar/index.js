@@ -5,7 +5,7 @@ const Navbar = styled('nav')(() => ({
   backgroundColor: '#333',
   color: '#fff',
   width: '100%',
-  position: 'absolute',
+  position: 'fixed',// CHANGED TO ABSOLUTE TO FIX 
   top: 0,
   left: 0,
   zIndex: 1000,
