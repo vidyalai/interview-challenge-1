@@ -20,7 +20,25 @@ async function fetchPosts(params) {
     },
   );
 
-  return posts;
+  
+
+  const postsWithImagesPromises = posts.map(async (post) => {
+    const { data: photos } = await axios.get(`https://jsonplaceholder.typicode.com/albums/${post.id}/photos`);
+    const images = photos.map(photo => ({ url: photo.url }));
+
+    const { data: user } = await axios.get(`https://jsonplaceholder.typicode.com/users/${post.userId}`);
+
+    
+    return {
+      ...post,
+      images,
+      user
+    };
+  });
+
+  const postsWithImages = await Promise.all(postsWithImagesPromises);
+
+  return (postsWithImages);
 }
 
 module.exports = { fetchPosts };
