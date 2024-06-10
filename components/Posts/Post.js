@@ -65,7 +65,7 @@ const NextButton = styled(Button)`
   top:140px
 `;
 
-const UserName = styled.h3(() => ({
+const UserName = styled.span(() => ({
   padding: '10px',
   boxSizing: 'border-box',
   marginTop: '10px',
@@ -109,7 +109,6 @@ const Email = styled.p(()=>({
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
-console.log(post);
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
@@ -169,9 +168,12 @@ console.log(post);
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        map: PropTypes.func,
+      })
+    ),
+    
     title: PropTypes.any,
   }),
 };
