@@ -10,6 +10,7 @@ const axios = require('axios').default;
  */
 async function fetchPosts(params) {
   const { start = 0, limit = 10 } = params || {};
+
   const { data: posts } = await axios.get(
     'https://jsonplaceholder.typicode.com/posts?limit',
     {
@@ -20,7 +21,29 @@ async function fetchPosts(params) {
     },
   );
 
+  posts.totalPosts = 100;
+
   return posts;
 }
 
-module.exports = { fetchPosts };
+/**
+ * Function used to fetch images for the corresponding post id
+ * @async
+ * @param {number} postId - id used to fetch images corresponding to the posts
+ * @returns {Object} - array of images
+ */
+
+async function fetchImages(postId) {
+  try {
+    const images = await axios.get(
+      `https://jsonplaceholder.typicode.com/albums/${postId}/photos`,
+    );
+
+    return images;
+  } catch (error) {
+    console.error(error.message);
+    throw error;
+  }
+}
+
+module.exports = { fetchPosts, fetchImages };
