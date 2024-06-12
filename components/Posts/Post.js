@@ -46,13 +46,16 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+
+  // moving the carousel navigation to vertically center position
+  transform: 'translateY(-50%)',
 }));
 
 const PrevButton = styled(Button)`
@@ -63,8 +66,46 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const Details = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+  gap: '10px',
+}));
+
+const CircleContainer = styled.div(() => ({
+  width: '50px',
+  height: '50px',
+  borderRadius: '100%',
+  backgroundColor: '#999696',
+  color: '#fff',
+  fontSize: '20px',
+  fontWeight: '650',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+}));
+
+const DetailsContainer = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const NameContainer = styled.div(() => ({
+  color: 'black',
+  fontWeight: '700',
+  fontSize: '18px',
+}));
+
+const EmailContainer = styled.div(() => ({
+  color: 'black',
+  fontSize: '15px',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+
+  const splitUserName = post.user.name.split(' ');
 
   const handleNextClick = () => {
     if (carouselRef.current) {
@@ -86,6 +127,16 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <Details>
+        <CircleContainer>
+          {splitUserName[0][0]}
+          {splitUserName[1][0]}
+        </CircleContainer>
+        <DetailsContainer>
+          <NameContainer>{post.user.name}</NameContainer>
+          <EmailContainer>{post.user.email}</EmailContainer>
+        </DetailsContainer>
+      </Details>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
