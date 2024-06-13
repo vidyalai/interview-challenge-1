@@ -44,6 +44,18 @@ const Content = styled.div(() => ({
   },
 }));
 
+const Content0 = styled.div(() => ({
+  padding: '5px',
+  display: 'flex',
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  gap: '5px',
+}));
+
+const Content1 = styled.div(() => ({
+  lineHeight: '1',
+}));
+
 const Button = styled.button(() => ({
   position: 'absolute',
   bottom: 0,
@@ -56,20 +68,20 @@ const Button = styled.button(() => ({
 }));
 
 const PrevButton = styled(Button)`
-  left: 10px;
+  left: 12px;
 `;
 
 const NextButton = styled(Button)`
-  right: 10px;
+  right: 12px;
 `;
 
-const Post = ({ post }) => {
+const Post = ({ post, user }) => {
   const carouselRef = useRef(null);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,14 +90,38 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
   };
 
+  if (!user || !post.images) {
+    return <div>Loading...</div>;
+  }
+
+  const splitting = () => {
+    const names = user.name.split(' ');
+    return names[1].charAt(0);
+  };
+
+  const splitName = (name) => {
+    const curr = name.split(" ");
+
+    return `${curr[0].charAt(0)} ${curr[1].charAt(0)}`
+  }
+
   return (
     <PostContainer>
+      <Content0>
+        <h4 style={{ fontSize: '22px', backgroundColor: 'RGB(128, 128, 128)', color: 'white', textAlign: 'center', padding: '10px', borderRadius: '50%' }}>
+          {user.name.charAt(0)}{splitting()}
+        </h4>
+        <Content1>
+          <h3>{splitName(user.name)}</h3>
+          <h5>{user.email}</h5>
+        </Content1>
+      </Content0>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,11 +143,19 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
+    id: PropTypes.number.isRequired,
+    userId: PropTypes.number.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+  }).isRequired,
+  user: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    email: PropTypes.string.isRequired,
   }),
 };
 

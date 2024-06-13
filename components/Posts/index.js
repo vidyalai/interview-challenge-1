@@ -4,6 +4,7 @@ import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
 import useWindowWidth from '../hooks/useWindowWidth';
+import { fetchPosts } from '../../server/posts/posts.service';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -34,34 +35,65 @@ const LoadMoreButton = styled.button(() => ({
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState({});
+  const [start, setStart] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const limit = 5;
 
   const { isSmallerDevice } = useWindowWidth();
 
+
+
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
+    const fetchPostsData = async () => {
+      setIsLoading(true);
+      const { data: initialPosts } = await axios.get('/api/v1/posts', {
+        params: { start, limit: isSmallerDevice ? 5 : 10 },
       });
-      setPosts(posts);
+      
+
+      const userIds = [...new Set(initialPosts.map(post => post.id))]; 
+      const userPromises = userIds.map(userId => axios.get(`/api/v1/users/${userId}`));
+      const usersData = await Promise.all(userPromises);
+
+     
+      const usersMap = usersData.reduce((acc, userResponse) => {
+        acc[userResponse.data.id] = userResponse.data;
+        return acc;
+      }, {});
+
+      setPosts(prevPosts => [...prevPosts, ...initialPosts]);
+      setUsers(usersMap);
+      setIsLoading(false);
     };
 
-    fetchPost();
-  }, [isSmallerDevice]);
+    fetchPostsData();
+  }, [start, isSmallerDevice]);
 
-  const handleClick = () => {
+
+ 
+  const handleClick = async () => {
     setIsLoading(true);
+  const newStart = start + limit; 
+  const newPosts = await fetchPosts(newStart, limit);
+  console.log('New Posts:', newPosts);
+  setPosts([]); 
+  setPosts(newPosts); 
+  await setStart(newStart); 
+  setIsLoading(false);
 
     setTimeout(() => {
       setIsLoading(false);
     }, 3000);
   };
+ 
+  
 
   return (
     <Container>
       <PostListContainer>
         {posts.map(post => (
-          <Post post={post} />
+          <Post key={post.id} post={post} user={users[post.id]} />
         ))}
       </PostListContainer>
 
