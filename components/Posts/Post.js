@@ -10,6 +10,14 @@ const PostContainer = styled.div(() => ({
   overflow: 'hidden',
 }));
 
+const PostHeader = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'row',
+  gap: '10px',
+  margin: '10px',
+  alignItems: 'center',
+}));
+
 const CarouselContainer = styled.div(() => ({
   position: 'relative',
 }));
@@ -67,6 +75,19 @@ const NextButton = styled(Button)`
   transform: translate(0, -50%);
 `;
 
+const Icon = styled.div(() => ({
+  backgroundColor: 'gray',
+  borderRadius: '50%',
+  height: '50px',
+  width: '50px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold',
+  fontSize: 'large',
+  color: 'white',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
 
@@ -90,6 +111,15 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <PostHeader>
+        <Icon>
+          {post.user.name.split(' ').map(partName => partName[0].toUpperCase())}
+        </Icon>
+        <div>
+          <p style={{fontWeight: 'bold'}}>{post.user.name}</p>
+          <p style={{fontSize: 'small'}}>{post.user.email}</p>
+        </div>
+      </PostHeader>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
