@@ -61,7 +61,7 @@ export default function Posts() {
     <Container>
       <PostListContainer>
         {posts.map(post => (
-          <Post post={post} key={Math.random()*11}/>
+          <Post post={post} key={post.id}/>
         ))}
       </PostListContainer>
 

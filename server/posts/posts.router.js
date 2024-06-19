@@ -1,5 +1,5 @@
 const express = require('express');
-const { fetchPosts } = require('./posts.service');
+const { fetchPosts, fetchPhotos } = require('./posts.service');
 const { fetchUserById } = require('../users/users.service');
 
 const router = express.Router();
@@ -7,17 +7,18 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   const posts = await fetchPosts();
 
-  const postsWithImages = posts.reduce((acc, post) => {
+  const postsWithImages = await posts.reduce(async (acc, post) => {
     // TODO use this route to fetch photos for each post
     // axios.get(`https://jsonplaceholder.typicode.com/albums/${post.id}/photos`);
+    const photos = await fetchPhotos(post);
     return [
-      ...acc,
+      ...await acc,
       {
         ...post,
         images: [
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
+          { url: photos[Math.floor(Math.random()*photos.length)].url },
+          { url: photos[Math.floor(Math.random()*photos.length)].url },
+          { url: photos[Math.floor(Math.random()*photos.length)].url },
         ],
       },
     ];
