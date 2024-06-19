@@ -139,13 +139,17 @@ const Post = ({ post }) => {
   );
 };
 
+//Corrected the PropTypes for Post
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
+    body: PropTypes.string,
+    images: PropTypes.array,
+    title: PropTypes.string,
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
+    }), 
   }),
 };
 

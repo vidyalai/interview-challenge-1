@@ -10,7 +10,7 @@ export const IsSmallerDeviceContext = createContext(initialState);
 
 export const IsSmallerDeviceProvider = ({children}) => {
     const [isSmallerDevice, setIsSmallerDevice] = useState(false);
-    const [providerInit, setProviderInit] = useState(false);
+    const [providerInit, setProviderInit] = useState(false); //Used to only render children after the provider is initialised
     useLayoutEffect(() => {
         const handleResize = () => {
           const width = window.innerWidth;
@@ -27,7 +27,7 @@ export const IsSmallerDeviceProvider = ({children}) => {
       }, []);
     return (
         <IsSmallerDeviceContext.Provider value={{isSmallerDevice, setIsSmallerDevice}}>
-            {providerInit && children}
+            {providerInit && children} 
         </IsSmallerDeviceContext.Provider>
     )
 }

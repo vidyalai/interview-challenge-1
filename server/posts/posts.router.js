@@ -8,8 +8,6 @@ router.get('/', async (req, res) => {
   const posts = await fetchPosts(req.query);
 
   const postsWithImages = await posts.reduce(async (acc, post) => {
-    // TODO use this route to fetch photos for each post
-    // axios.get(`https://jsonplaceholder.typicode.com/albums/${post.id}/photos`);
     const photos = await fetchPhotos(post);
     const user = await fetchUserById(post.userId);
     return [
@@ -17,11 +15,11 @@ router.get('/', async (req, res) => {
       {
         ...post,
         images: [
-          { url: photos[Math.floor(Math.random()*photos.length)].url },
+          { url: photos[Math.floor(Math.random()*photos.length)].url }, //selects a random photo from the photos array of the post
           { url: photos[Math.floor(Math.random()*photos.length)].url },
           { url: photos[Math.floor(Math.random()*photos.length)].url },
         ],
-        user: user,
+        user: user, //user object containing user name and user email
       },
     ];
   }, []);

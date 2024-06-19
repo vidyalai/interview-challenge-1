@@ -121,7 +121,8 @@ const useUserData = () => {
 };
 
 const UserList = () => {
-  const { users, handleOnSearch, handleSort, sortColumn, sortDirection } = useUserData();
+  const { users, handleOnSearch, handleSort, sortColumn, sortDirection } =
+    useUserData();
 
   return (
     <div>
