@@ -5,10 +5,12 @@ const Navbar = styled('nav')(() => ({
   backgroundColor: '#333',
   color: '#fff',
   width: '100%',
-  position: 'absolute',
+  position: 'sticky', //made the top nav bar sticky during scrolling
   top: 0,
   left: 0,
   zIndex: 1000,
+  padding: '10px 0', // Added padding for better spacing
+  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Added subtle shadow for depth
 }));
 
 const ListItem = styled('li')(() => ({
@@ -22,6 +24,7 @@ const Link = styled('a')(() => ({
   color: '#fff',
   textDecoration: 'none',
 
+
   '&:hover': {
     textDecoration: 'underline',
   },
@@ -29,7 +32,7 @@ const Link = styled('a')(() => ({
 
 const TopNavbar = () => {
   return (
-    <div>
+    
       <Navbar>
         <ul style={{}}>
           <ListItem>
@@ -40,7 +43,7 @@ const TopNavbar = () => {
           </ListItem>
         </ul>
       </Navbar>
-    </div>
+    
   );
 };
 
