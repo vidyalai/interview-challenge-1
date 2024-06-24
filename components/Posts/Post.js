@@ -1,6 +1,8 @@
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
 import styled from '@emotion/styled';
+import { useRef } from 'react';
+import axios from 'axios';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -46,7 +48,8 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%', // Center button vertically relative to parent
+  transform: 'translateY(-50%)', // Adjust for vertical centering
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -63,29 +66,110 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const UserInfo = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+}));
+
+const Avatar = styled.div(({ theme }) => ({
+  width: '45px',
+  height: '44px',
+  borderRadius: '50%',
+  backgroundColor: theme.primaryColor,
+  color: '#fff',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  marginRight: '10px',
+  fontSize: '20px',
+  fontWeight: 'bold',
+  color: 'white',
+  background: 'gray',
+}));
+
+const UserName = styled.span(() => ({
+  fontSize: '16px',
+  fontWeight: 'bold',
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const UserEmail = styled.span(() => ({
+  fontSize: '14px',
+  color: '#666',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
-
   const handleNextClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
+      const carousel = carouselRef.current;
+      const scrollWidth = carousel.scrollWidth;
+      const clientWidth = carousel.clientWidth;
+      const scrollLeft = carousel.scrollLeft;
+
+      let nextScrollLeft = scrollLeft + clientWidth;
+
+      if (nextScrollLeft >= scrollWidth) {
+        nextScrollLeft = 0; // Wrap around to the beginning
+      }
+
+      carousel.scrollTo({
+        left: nextScrollLeft,
         behavior: 'smooth',
       });
     }
   };
-
   const handlePrevClick = () => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
+      const carousel = carouselRef.current;
+      const scrollWidth = carousel.scrollWidth;
+      const clientWidth = carousel.clientWidth;
+      const scrollLeft = carousel.scrollLeft;
+
+      let nextScrollLeft = scrollLeft - clientWidth;
+
+      if (nextScrollLeft < 0) {
+        nextScrollLeft = scrollWidth - clientWidth; // Wrap around to the end
+      }
+
+      carousel.scrollTo({
+        left: nextScrollLeft,
         behavior: 'smooth',
       });
     }
   };
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const { data } = await axios.get(
+          `https://jsonplaceholder.typicode.com/users/${post.userId}`,
+        );
+        setUser(data);
+      } catch (error) {
+        console.error('Error fetching user:', error);
+      }
+    };
+
+    fetchUser();
+  }, [post.userId]);
+
+  if (!user) {
+    return null; // You can return a loading state or placeholder if user data is still fetching
+  }
 
   return (
     <PostContainer>
+      <UserInfo>
+        <Avatar>{`${user.name[0]}${user.name.split(' ')[1][0]}`}</Avatar>
+        <div>
+          <UserName>{user.name}</UserName>
+          <UserEmail>{user.email}</UserEmail>
+        </div>
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -108,11 +192,19 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    userId: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      }),
+    ).isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 };
 
 export default Post;

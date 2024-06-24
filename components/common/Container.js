@@ -1,7 +1,17 @@
 import React from 'react';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../../context/WindowWidthContext';
+import ClientOnly from '../ClientOnly';
 
+// Container component that adjusts content based on window width
 export default function Container({ children }) {
+  return (
+    <ClientOnly>
+      <ContainerContent>{children}</ContainerContent>
+    </ClientOnly>
+  );
+}
+
+const ContainerContent = ({ children }) => {
   const { isSmallerDevice } = useWindowWidth();
   return (
     <div
@@ -15,4 +25,4 @@ export default function Container({ children }) {
       <div style={{ width: isSmallerDevice ? '95%' : '85%' }}>{children}</div>
     </div>
   );
-}
+};

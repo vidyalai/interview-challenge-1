@@ -3,8 +3,10 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../../context/WindowWidthContext';
+import ClientOnly from '../ClientOnly';
 
+// Styled components for styling purposes
 const PostListContainer = styled.div(() => ({
   display: 'flex',
   flexWrap: 'wrap',
@@ -32,44 +34,81 @@ const LoadMoreButton = styled.button(() => ({
   },
 }));
 
+// Main component to display posts
 export default function Posts() {
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
   const { isSmallerDevice } = useWindowWidth();
 
+  return (
+    <ClientOnly>
+      <PostsContent isSmallerDevice={isSmallerDevice} />
+    </ClientOnly>
+  );
+}
+
+// PostsContent component handles fetching and displaying posts
+const PostsContent = ({ isSmallerDevice }) => {
+  const [posts, setPosts] = useState([]); 
+  const [isLoading, setIsLoading] = useState(false); 
+  const [start, setStart] = useState(0); 
+  const [hasMorePosts, setHasMorePosts] = useState(true); 
+  const limit = isSmallerDevice ? 5 : 10;
+
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      try {
+        const { data } = await axios.get('/api/v1/posts', {
+          params: { start: 0, limit }, 
+        });
+        setPosts(data); 
+        setStart(data.length); 
+        setHasMorePosts(data.length === limit); // Determine if there are more posts to load based on fetched data length
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    fetchPost();
+    fetchPosts(); // Initial fetch when component mounts or when isSmallerDevice changes
   }, [isSmallerDevice]);
 
-  const handleClick = () => {
+  // Function to handle "Load More" button click
+  const handleClick = async () => {
     setIsLoading(true);
-
-    setTimeout(() => {
+    try {
+      const { data: newPosts } = await axios.get('/api/v1/posts', {
+        params: { start, limit },
+      });
+      setPosts(prevPosts => [...prevPosts, ...newPosts]); 
+      setStart(prevStart => prevStart + newPosts.length); 
+      setHasMorePosts(newPosts.length === limit); 
+    } catch (error) {
+      console.error('Error fetching more posts:', error);
+    } finally {
       setIsLoading(false);
-    }, 3000);
+    }
   };
 
   return (
     <Container>
       <PostListContainer>
         {posts.map(post => (
-          <Post post={post} />
+          <Post key={post.id} post={post} /> // Render each post using the Post component
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
+      {/* Render "Load More" button if there are more posts to load */}
+      {hasMorePosts && (
+        <div
+          style={{ display: 'flex', justifyContent: 'center', marginTop: 20 }}
+        >
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}{' '}
+            
+          </LoadMoreButton>
+        </div>
+      )}
     </Container>
   );
-}
+};
