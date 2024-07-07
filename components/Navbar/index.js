@@ -5,7 +5,7 @@ const Navbar = styled('nav')(() => ({
   backgroundColor: '#333',
   color: '#fff',
   width: '100%',
-  position: 'absolute',
+  position: 'fixed',  // Changed position from 'absolute' to 'fixed'
   top: 0,
   left: 0,
   zIndex: 1000,
@@ -13,8 +13,8 @@ const Navbar = styled('nav')(() => ({
 
 const ListItem = styled('li')(() => ({
   display: 'inline-block',
-  marginRight: '20px',
-  fontSize: '18px',
+  marginRight: '24px',
+  fontSize: '24px',
   cursor: 'pointer',
 }));
 
