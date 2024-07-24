@@ -53,6 +53,8 @@ const Button = styled.button(() => ({
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  top: '50%',
+  transform: 'translateY(-50%)',
 }));
 
 const PrevButton = styled(Button)`
@@ -68,8 +70,9 @@ const Post = ({ post }) => {
 
   const handleNextClick = () => {
     if (carouselRef.current) {
+      const divwidth = carouselRef.current.offsetWidth;
       carouselRef.current.scrollBy({
-        left: 50,
+        left: divwidth,
         behavior: 'smooth',
       });
     }
@@ -77,8 +80,9 @@ const Post = ({ post }) => {
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
+      const divwidth = carouselRef.current.offsetWidth;
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -divwidth,
         behavior: 'smooth',
       });
     }

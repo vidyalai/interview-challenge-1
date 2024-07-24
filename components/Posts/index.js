@@ -35,40 +35,57 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [visiblePosts, setVisiblePosts] = useState(5);
+  const [hasmore, setHasMore] = useState(true);
+
 
   const { isSmallerDevice } = useWindowWidth();
 
   useEffect(() => {
+    fetchPost();
+  }, [isSmallerDevice]);
+
+
     const fetchPost = async () => {
       const { data: posts } = await axios.get('/api/v1/posts', {
         params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
       });
-      setPosts(posts);
-    };
+      const { data: usersData } = await axios.get('https://jsonplaceholder.typicode.com/users');
 
-    fetchPost();
-  }, [isSmallerDevice]);
+
+      const postsWithUsers = posts.map((post) => {
+        const user = usersData.find((user) => user.id === post.userId);
+        return {
+          ...post,
+          user: user || {},
+        };
+      })
+
+
+      setPosts(postsWithUsers);
+    };
+    
 
   const handleClick = () => {
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    setVisiblePosts(posts.length);
+    setHasMore(false);
   };
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
-        ))}
+       {posts.slice(0, visiblePosts).map((post) => (
+            <Post key={post.id} post={post} />
+          ))}
       </PostListContainer>
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
+        {hasmore && (
+           <LoadMoreButton onClick={handleClick}>
+           Load More
+         </LoadMoreButton>
+        )}
+       
       </div>
     </Container>
   );
