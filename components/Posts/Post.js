@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
 
 const PostContainer = styled.div(() => ({
   width: '300px',
@@ -16,25 +17,54 @@ const CarouselContainer = styled.div(() => ({
 
 const Carousel = styled.div(() => ({
   display: 'flex',
-  overflowX: 'scroll',
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
-  '&::-webkit-scrollbar': {
-    display: 'none',
-  },
+  overflow: 'hidden',
+  width: '100%',
   position: 'relative',
 }));
 
 const CarouselItem = styled.div(() => ({
-  flex: '0 0 auto',
+  minWidth: '100%',
   scrollSnapAlign: 'start',
 }));
 
-const Image = styled.img(() => ({
-  width: '280px',
-  height: 'auto',
-  maxHeight: '300px',
+const UserInfo = styled.div(() => ({
   padding: '10px',
+  fontStyle: 'italic',
+  color: '#555',
+  backgroundColor: '#f9f9f9',
+  borderBottom: '1px solid #ccc',
+  display: 'flex',
+  alignItems: 'center',
+  gap: '10px',
+}));
+
+const UserInitials = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: 'grey',
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold',
+  fontSize: '18px',
+}));
+
+const UserNameEmail = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const UserName = styled.div(() => ({
+  fontWeight: 'bold',
+  color: 'black',
+}));
+
+const Image = styled.img(() => ({
+  width: '100%',
+  height: 'auto',
+  objectFit: 'cover',
 }));
 
 const Content = styled.div(() => ({
@@ -46,46 +76,74 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  width: '30px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
 }));
 
 const PrevButton = styled(Button)`
-  left: 10px;
+  left: 0;
 `;
 
 const NextButton = styled(Button)`
-  right: 10px;
+  right: 0;
 `;
+
+const getInitials = (name) => {
+  const nameParts = name.split(' ');
+  if (nameParts.length >= 2) {
+    const first = nameParts[0];
+    const last = nameParts[nameParts.length - 1];
+    return `${first.charAt(0)}${last.charAt(0)}`;
+  }
+  return name.charAt(0);
+};
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleNextClick = () => {
+  useEffect(() => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
+      carouselRef.current.scrollTo({
+        left: currentIndex * carouselRef.current.offsetWidth,
         behavior: 'smooth',
       });
     }
+  }, [currentIndex]);
+
+  const handleNextClick = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % post.images.length);
   };
 
   const handlePrevClick = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
-        behavior: 'smooth',
-      });
-    }
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? post.images.length - 1 : prevIndex - 1
+    );
   };
+
+  const userName = post.user ? post.user.name : 'Leanne Graham';
+  const userEmail = post.user ? post.user.email : 'Sincere@april.biz';
+  const userInitials = post.user ? getInitials(post.user.name) : 'LG';
 
   return (
     <PostContainer>
+      <UserInfo>
+        <UserInitials>{userInitials}</UserInitials>
+        <UserNameEmail>
+          <UserName>{userName}</UserName>
+          <div>{userEmail}</div>
+        </UserNameEmail>
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,12 +165,18 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
     }),
-    title: PropTypes.any,
-  }),
+  }).isRequired,
 };
 
 export default Post;
