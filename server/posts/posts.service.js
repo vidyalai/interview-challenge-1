@@ -23,4 +23,15 @@ async function fetchPosts(params) {
   return posts;
 }
 
-module.exports = { fetchPosts };
+async function fetchPostImages(imageId) {
+  try {
+    const { data: postImages } = await axios.get(
+      `https://jsonplaceholder.typicode.com/albums/${imageId}/photos`,
+    );
+    return postImages;
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+module.exports = { fetchPosts, fetchPostImages };

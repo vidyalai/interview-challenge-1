@@ -35,7 +35,7 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-
+  const [pagination, setPagination] = useState(0);
   const { isSmallerDevice } = useWindowWidth();
 
   useEffect(() => {
@@ -43,18 +43,24 @@ export default function Posts() {
       const { data: posts } = await axios.get('/api/v1/posts', {
         params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
       });
+      console.log(posts);
       setPosts(posts);
     };
 
     fetchPost();
   }, [isSmallerDevice]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    const { data: newPosts } = await axios.get('/api/v1/posts', {
+      params: {
+        start: isSmallerDevice ? pagination + 5 : pagination + 10,
+        limit: isSmallerDevice ? 5 : 10,
+      },
+    });
+    setPosts(posts => [...posts, ...newPosts]);
+    setPagination(isSmallerDevice ? pagination + 5 : pagination + 10);
+    setIsLoading(false);
   };
 
   return (

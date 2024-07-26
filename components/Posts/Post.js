@@ -57,19 +57,21 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  top: 50%;
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  top: 50%;
 `;
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
-
+  console.log(post);
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,19 +80,52 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
+  };
+  const getInitials = name => {
+    const nameParts = name.split(' ');
+    const initials = nameParts
+      .map(part => part.charAt(0).toUpperCase())
+      .join('');
+    return initials;
   };
 
   return (
     <PostContainer>
       <CarouselContainer>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            padding: '0 10px',
+            gap: '5px',
+            marginTop: '10px',
+          }}
+        >
+          <div
+            style={{
+              background: 'black',
+              color: 'white',
+              padding: '10px 10px',
+              borderRadius: '50%',
+            }}
+          >
+            {getInitials(post.userDetails.name)}
+          </div>
+          <div>
+            <p>{post.userDetails.name}</p>
+            <p>{post.userDetails.email}</p>
+          </div>
+        </div>
+
         <Carousel ref={carouselRef}>
-          {post.images.map((image, index) => (
+          {post.postImages.map((image, index) => (
             <CarouselItem key={index}>
-              <Image src={image.url} alt={post.title} />
+              {/* <p>{image.albumId}</p> */}
+              <Image src={image.url} alt={image.title} />
             </CarouselItem>
           ))}
         </Carousel>
