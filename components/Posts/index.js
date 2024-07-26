@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../context/WindowWidthContext'; // Import the context
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -36,7 +36,7 @@ export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { isSmallerDevice } = useWindowWidth();
+  const { isSmallerDevice } = useWindowWidth(); // Use the context
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -60,8 +60,8 @@ export default function Posts() {
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {posts.map((post, index) => ( // Added index parameter
+          <Post key={post.id} post={post} postIndex={index} /> // Passed index to Post component
         ))}
       </PostListContainer>
 
