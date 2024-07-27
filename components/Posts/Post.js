@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 
 const PostContainer = styled.div(() => ({
@@ -23,11 +23,31 @@ const Carousel = styled.div(() => ({
     display: 'none',
   },
   position: 'relative',
+  scrollSnapType: 'x mandatory',
 }));
 
 const CarouselItem = styled.div(() => ({
   flex: '0 0 auto',
   scrollSnapAlign: 'start',
+  position: 'relative',
+}));
+
+const ProfileSection = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+  backgroundColor: '#f9f9f9',
+}));
+
+const ProfileImage = styled.img(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  marginRight: '10px',
+}));
+
+const ProfileInfo = styled.div(() => ({
+  fontSize: '14px',
 }));
 
 const Image = styled.img(() => ({
@@ -46,7 +66,8 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -65,11 +86,18 @@ const NextButton = styled(Button)`
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [itemWidth, setItemWidth] = useState(0);
+
+  useEffect(() => {
+    if (carouselRef.current && carouselRef.current.children.length > 0) {
+      setItemWidth(carouselRef.current.children[0].offsetWidth);
+    }
+  }, [carouselRef]);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: itemWidth,
         behavior: 'smooth',
       });
     }
@@ -78,7 +106,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -itemWidth,
         behavior: 'smooth',
       });
     }
@@ -90,6 +118,13 @@ const Post = ({ post }) => {
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
+              <ProfileSection>
+                <ProfileImage src={image.url} alt={`${post.userName}'s profile`} />
+                <ProfileInfo>
+                  <div>{post.userName}</div>
+                  <div>{post.userEmail}</div>
+                </ProfileInfo>
+              </ProfileSection>
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
           ))}
@@ -107,12 +142,17 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string,
+    body: PropTypes.string,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string,
+      }),
+    ),
+    profileImage: PropTypes.string, // Added profile image URL
+    userName: PropTypes.string,      // Added user name
+    userEmail: PropTypes.string,     // Added user email
+  }).isRequired,
 };
 
 export default Post;
