@@ -44,6 +44,35 @@ const Content = styled.div(() => ({
   },
 }));
 
+const Profile = styled.div(() => ({
+  padding: '10px',
+  display: 'flex',
+  alignItems: 'center',
+}));
+const Details = styled.div(() => ({
+  '& > h1': {
+    fontSize: '15px',
+    padding: '0 10px',
+  },
+  '& > h2': {
+    fontSize: '10px',
+    fontWeight: '200',
+    padding: '0 10px',
+  },
+}));
+
+const RoundImage = styled.div(() => ({
+  borderRadius: '50%',
+  height: '40px',
+  width: '40px',
+  backgroundColor: '#808080',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  fontWeight: 'bold',
+  color: '#fff',
+}));
+
 const Button = styled.button(() => ({
   position: 'absolute',
   bottom: 0,
@@ -57,10 +86,12 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  margin-bottom: 50%;
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  margin-bottom: 50%;
 `;
 
 const Post = ({ post }) => {
@@ -69,7 +100,7 @@ const Post = ({ post }) => {
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,7 +109,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
@@ -86,6 +117,13 @@ const Post = ({ post }) => {
 
   return (
     <PostContainer>
+      <Profile>
+        <RoundImage>LG</RoundImage>
+        <Details>
+          <h1>Leanne Graham</h1>
+          <h2>Sincere@april.biz</h2>
+        </Details>
+      </Profile>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (

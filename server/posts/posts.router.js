@@ -1,29 +1,40 @@
 const express = require('express');
+const axios = require('axios');
 const { fetchPosts } = require('./posts.service');
 const { fetchUserById } = require('../users/users.service');
 
 const router = express.Router();
 
 router.get('/', async (req, res) => {
-  const posts = await fetchPosts();
+  try {
+    const posts = await fetchPosts(req);
 
-  const postsWithImages = posts.reduce((acc, post) => {
-    // TODO use this route to fetch photos for each post
-    // axios.get(`https://jsonplaceholder.typicode.com/albums/${post.id}/photos`);
-    return [
-      ...acc,
-      {
+    const postsWithImagesPromises = posts.map(async post => {
+      const response = await axios.get(
+        `https://jsonplaceholder.typicode.com/albums/${post.id}/photos?limits`,
+        {
+          params: {
+            _limit: 5,
+          },
+        },
+      );
+      const images = response.data.map(photo => ({ url: photo.url }));
+
+      return {
         ...post,
-        images: [
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
-          { url: 'https://picsum.photos/200/300' },
-        ],
-      },
-    ];
-  }, []);
+        images,
+      };
+    });
 
-  res.json(postsWithImages);
+    const postsWithImages = await Promise.all(postsWithImagesPromises);
+
+    res.json(postsWithImages);
+  } catch (error) {
+    console.error(error);
+    res
+      .status(500)
+      .json({ error: 'An error occurred while fetching posts and images' });
+  }
 });
 
 module.exports = router;
