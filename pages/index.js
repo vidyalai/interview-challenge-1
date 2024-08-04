@@ -5,15 +5,11 @@ import TopNavbar from '../components/Navbar';
 
 export default function HomePage() {
   return (
-    <div
-      style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}
-    >
-      <TopNavbar />
-      <div
-        style={{
-          margin: '60px 0px 20px',
-        }}
-      >
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 1000 }}>
+        <TopNavbar />
+      </div>
+      <div style={{ margin: '60px 0px 20px' }}>
         <Posts />
       </div>
       <Footer />

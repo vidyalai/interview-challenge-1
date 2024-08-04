@@ -40,9 +40,40 @@ const Image = styled.img(() => ({
 const Content = styled.div(() => ({
   padding: '10px',
   '& > h2': {
-    marginBottom: '16px',
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '0',
+  },
+  '& > h2 > span': {
+    display: 'inline-block',
+    width: '40px',
+    height: '40px',
+    borderRadius: '50%',
+    backgroundColor: '#ddd',
+    color: '#fff',
+    textAlign: 'center',
+    lineHeight: '40px',
+    marginRight: '10px',
+    fontWeight: 'bold',
+  },
+  '& > h2 > div': {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  '& > h2 > div > p': {
+    margin: '0',
+    fontWeight: 'bold',
+  },
+  '& > h2 > div > h3': {
+    margin: '0',
+    fontWeight: '400',
+    fontSize: '13px'
+  },
+  '& > p': {
+    marginTop: '8px',
   },
 }));
+
 
 const Button = styled.button(() => ({
   position: 'absolute',
@@ -68,8 +99,9 @@ const Post = ({ post }) => {
 
   const handleNextClick = () => {
     if (carouselRef.current) {
+      const photoWidth = carouselRef.current.firstChild.clientWidth;
       carouselRef.current.scrollBy({
-        left: 50,
+        left: photoWidth,
         behavior: 'smooth',
       });
     }
@@ -77,15 +109,31 @@ const Post = ({ post }) => {
 
   const handlePrevClick = () => {
     if (carouselRef.current) {
+      const photoWidth = carouselRef.current.firstChild.clientWidth;
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -photoWidth,
         behavior: 'smooth',
       });
     }
   };
 
+  const getInitials = (name) => {
+    const names = name.split(' ');
+    const initials = names.map(n => n[0]).join('');
+    return initials.toUpperCase();
+  };
+
   return (
     <PostContainer>
+      <Content>
+      <h2>
+          <span>{getInitials(post.user.name)}</span>
+          <div>
+            <p>{post.user.username}</p>
+            <h3>{post.user.email}</h3>
+          </div>
+        </h2>
+      </Content>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,12 +155,19 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string.isRequired,
+      username: PropTypes.string.isRequired,
+      email: PropTypes.string.isRequired,
+    }).isRequired,
+  }).isRequired,
 };
 
 export default Post;
