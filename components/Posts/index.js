@@ -9,67 +9,42 @@ const PostListContainer = styled.div(() => ({
   display: 'flex',
   flexWrap: 'wrap',
   justifyContent: 'center',
+  padding: '20px',
 }));
 
-const LoadMoreButton = styled.button(() => ({
-  padding: '10px 20px',
-  backgroundColor: '#007bff',
-  color: '#fff',
-  border: 'none',
-  borderRadius: 5,
-  cursor: 'pointer',
-  fontSize: 16,
-  marginTop: 20,
-  transition: 'background-color 0.3s ease',
-  fontWeight: 600,
-
-  '&:hover': {
-    backgroundColor: '#0056b3',
-  },
-  '&:disabled': {
-    backgroundColor: '#808080',
-    cursor: 'default',
-  },
-}));
-
-export default function Posts() {
+const Posts = () => {
   const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const { isSmallerDevice } = useWindowWidth();
+  const [users, setUsers] = useState([]);
+  const windowWidth = useWindowWidth();
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchPosts = async () => {
+      const { data: postsData } = await axios.get('/api/v1/posts');
+      setPosts(postsData);
     };
 
-    fetchPost();
-  }, [isSmallerDevice]);
+    const fetchUsers = async () => {
+      const { data: usersData } = await axios.get('/api/v1/users');
+      setUsers(usersData);
+    };
 
-  const handleClick = () => {
-    setIsLoading(true);
+    fetchPosts();
+    fetchUsers();
+  }, []);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+  const findUser = (userId) => {
+    return users.find((user) => user.id === userId) || {};
   };
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {posts.map((post) => (
+          <Post key={post.id} post={post} user={findUser(post.userId)} />
         ))}
       </PostListContainer>
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
     </Container>
   );
-}
+};
+
+export default Posts;

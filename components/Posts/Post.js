@@ -16,12 +16,7 @@ const CarouselContainer = styled.div(() => ({
 
 const Carousel = styled.div(() => ({
   display: 'flex',
-  overflowX: 'scroll',
-  scrollbarWidth: 'none',
-  msOverflowStyle: 'none',
-  '&::-webkit-scrollbar': {
-    display: 'none',
-  },
+  overflowX: 'hidden', // Hide scrollbar
   position: 'relative',
 }));
 
@@ -46,7 +41,8 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
@@ -63,13 +59,50 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
-const Post = ({ post }) => {
+const UserInfo = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  marginTop: '10px',
+}));
+
+const InitialsCircle = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#ccc',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  marginRight: '10px',
+  fontWeight: 'bold',
+  fontSize: '16px',
+}));
+
+const UserDetails = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const getInitials = (name) => {
+  if (!name) return '';
+
+  const nameParts = name.split(' ');
+
+  if (nameParts.length === 1) {
+    return `${nameParts[0].charAt(0)}`;
+  }
+
+  const [firstName, lastName] = nameParts;
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+};
+
+const Post = ({ post, user }) => {
   const carouselRef = useRef(null);
 
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: carouselRef.current.offsetWidth,
         behavior: 'smooth',
       });
     }
@@ -78,7 +111,7 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -carouselRef.current.offsetWidth,
         behavior: 'smooth',
       });
     }
@@ -100,6 +133,13 @@ const Post = ({ post }) => {
       <Content>
         <h2>{post.title}</h2>
         <p>{post.body}</p>
+        <UserInfo>
+          <InitialsCircle>{getInitials(user.name)}</InitialsCircle>
+          <UserDetails>
+            <div>{user.name}</div>
+            <div>{user.email}</div>
+          </UserDetails>
+        </UserInfo>
       </Content>
     </PostContainer>
   );
@@ -107,12 +147,19 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    id: PropTypes.number.isRequired,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+  }).isRequired,
+  user: PropTypes.shape({
+    name: PropTypes.string.isRequired,
+    email: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default Post;
