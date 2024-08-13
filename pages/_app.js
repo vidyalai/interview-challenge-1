@@ -1,9 +1,18 @@
+
+
 import React from 'react';
+import WindowWidthContext, { WindowWidthProvider } from '../components/WindowWidthContext'; 
 
 const App = ({ Component, pageProps }) => (
-  <React.Fragment>
-    <Component {...pageProps} />
-  </React.Fragment>
+  <WindowWidthProvider>
+    <WindowWidthContext.Consumer>
+      {({ isSmallerDevice }) => (
+        <React.Fragment>
+          <Component {...pageProps} isSmallerDevice={isSmallerDevice} />
+        </React.Fragment>
+      )}
+    </WindowWidthContext.Consumer>
+  </WindowWidthProvider>
 );
 
 export default App;
