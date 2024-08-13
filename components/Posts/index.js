@@ -1,6 +1,6 @@
-import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
+import axios from 'axios';
 import Post from './Post';
 import Container from '../common/Container';
 import useWindowWidth from '../hooks/useWindowWidth';
@@ -34,42 +34,82 @@ const LoadMoreButton = styled.button(() => ({
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [users, setUsers] = useState([]); 
   const [isLoading, setIsLoading] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(0);
 
   const { isSmallerDevice } = useWindowWidth();
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const fetchUsers = async () => {
+      const { data: usersData } = await axios.get('/api/v1/users');
+      setUsers(usersData);
     };
 
-    fetchPost();
-  }, [isSmallerDevice]);
+    fetchUsers();
+  }, []);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      try {
+        const { data } = await axios.get('/api/v1/posts', {
+          params: {
+            start: page * (isSmallerDevice ? 5 : 10),
+            limit: isSmallerDevice ? 5 : 10,
+          },
+        });
+
+        const postsWithUserData = data.map((post, index) => {
+          const user = users[index % users.length];
+          return {
+            ...post,
+            userName: user?.name || 'Unknown', 
+            userEmail: user?.email || 'Unknown',
+          };
+        });
+
+        if (postsWithUserData.length > 0) {
+          setPosts((prevPosts) => [...prevPosts, ...postsWithUserData]);
+          setHasMore(postsWithUserData.length === (isSmallerDevice ? 5 : 10));
+        } else {
+          setHasMore(false);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+       
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (users.length > 0) {
+      fetchPosts();
+    }
+  }, [page, isSmallerDevice, users]);
 
   const handleClick = () => {
-    setIsLoading(true);
-
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    if (hasMore) {
+      setPage((prevPage) => prevPage + 1);
+    }
   };
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {posts.map((post) => (
+          <Post key={post.id} post={post} />
         ))}
       </PostListContainer>
 
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
+      {hasMore && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+            {isLoading ? 'Loading...' : 'Load More'}
+          </LoadMoreButton>
+        </div>
+      )}
     </Container>
   );
 }
