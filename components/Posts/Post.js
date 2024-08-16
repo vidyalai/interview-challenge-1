@@ -8,6 +8,8 @@ const PostContainer = styled.div(() => ({
   border: '1px solid #ccc',
   borderRadius: '5px',
   overflow: 'hidden',
+  position: 'relative',
+  paddingTop: '60px',
 }));
 
 const CarouselContainer = styled.div(() => ({
@@ -22,7 +24,6 @@ const Carousel = styled.div(() => ({
   '&::-webkit-scrollbar': {
     display: 'none',
   },
-  position: 'relative',
 }));
 
 const CarouselItem = styled.div(() => ({
@@ -42,6 +43,33 @@ const Content = styled.div(() => ({
   '& > h2': {
     marginBottom: '16px',
   },
+}));
+
+const UserInfo = styled.div(() => ({
+  position: 'absolute',
+  top: '10px',
+  left: '10px',
+  display: 'flex',
+  alignItems: 'center',
+  backgroundColor: '#f9f9f9',
+  padding: '5px 10px',
+  borderRadius: '20px',
+  boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
+  zIndex: 1,
+}));
+
+const ProfileInitials = styled.div(() => ({
+  width: '30px',
+  height: '30px',
+  borderRadius: '50%',
+  backgroundColor: '#8B4513', 
+  color: '#fff',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold',
+  fontSize: '14px',
+  marginRight: '10px',
 }));
 
 const Button = styled.button(() => ({
@@ -69,7 +97,7 @@ const Post = ({ post }) => {
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300,
         behavior: 'smooth',
       });
     }
@@ -78,14 +106,29 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,
         behavior: 'smooth',
       });
     }
   };
 
+  
+  const initials = post.userName
+    .split(' ')
+    .map((word) => word[0])
+    .join('')
+    .substring(0, 2)
+    .toUpperCase();
+
   return (
     <PostContainer>
+      <UserInfo>
+        <ProfileInitials>{initials}</ProfileInitials>
+        <div>
+          <div><b>{post.userName}</b></div>
+          <div>{post.userEmail}</div>
+        </div>
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
@@ -107,12 +150,16 @@ const Post = ({ post }) => {
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
-    title: PropTypes.any,
-  }),
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    ).isRequired,
+    userName: PropTypes.string.isRequired,
+    userEmail: PropTypes.string.isRequired,
+  }).isRequired,
 };
 
 export default Post;
