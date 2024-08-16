@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import styled from '@emotion/styled';
 
 const PostContainer = styled.div(() => ({
@@ -57,11 +57,50 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
 `;
+
+const ProfileSection = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+  backgroundColor: '#f9f9f9',
+}));
+
+const ProfileName = styled.div(() => ({
+  fontWeight: 'bold',
+  fontSize: '16px',
+  lineHeight: '16px',
+}));
+
+const ProfileEmail = styled.div(() => ({
+  fontWeight: 500,
+  fontSize: '12px',
+}));
+
+const ProfileImage = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  marginRight: '10px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  color: 'white',
+  fontWeight: 'bold',
+  backgroundColor: 'gray',
+}));
+
+const ProfileInfo = styled.div(() => ({
+  fontSize: '14px',
+}));
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
@@ -69,7 +108,7 @@ const Post = ({ post }) => {
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: carouselRef.current.clientWidth,
         behavior: 'smooth',
       });
     }
@@ -78,14 +117,31 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -1 * carouselRef.current.clientWidth,
         behavior: 'smooth',
       });
     }
   };
 
+  const getName = fullName => {
+    const names = fullName.split(' ');
+    if (names.length < 2) {
+      return '';
+    }
+    const firstName = names[0];
+    const lastName = names[names.length - 1];
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+  };
+
   return (
     <PostContainer>
+      <ProfileSection>
+        <ProfileImage>{getName(post.name)}</ProfileImage>
+        <ProfileInfo>
+          <ProfileName>{post.name}</ProfileName>
+          <ProfileEmail>{post.email}</ProfileEmail>
+        </ProfileInfo>
+      </ProfileSection>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
