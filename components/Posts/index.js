@@ -35,41 +35,73 @@ const LoadMoreButton = styled.button(() => ({
 export default function Posts() {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [start, setStart] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
   const { isSmallerDevice } = useWindowWidth();
+  const limit = isSmallerDevice ? 5 : 10;
+
+  const fetchPosts = async (start) => {
+    const { data: posts } = await axios.get('/api/v1/posts', {
+      params: { start, limit },
+    });
+
+    const { data: photos } = await axios.get('https://jsonplaceholder.typicode.com/albums/1/photos');
+
+    const postsWithImages = posts.map((post, index) => {
+      const globalIndex = start + index;
+      const startIdx = (globalIndex * 3) % photos.length;
+      const endIdx = (globalIndex * 3 + 3) % photos.length;
+      const postImages = Array.from({ length: 3 }, (_, i) => {
+        const idx = (startIdx + i) % photos.length;
+        return photos[idx].url;
+      });
+
+      return { ...post, images: postImages };
+    });
+
+    return postsWithImages;
+  };
 
   useEffect(() => {
-    const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+    const loadInitialPosts = async () => {
+      setIsLoading(true);
+      const initialPosts = await fetchPosts(0);
+      setPosts(initialPosts);
+      setIsLoading(false);
     };
 
-    fetchPost();
+    loadInitialPosts();
   }, [isSmallerDevice]);
 
-  const handleClick = () => {
+  const handleLoadMore = async () => {
     setIsLoading(true);
+    const newStart = start + limit;
+    const morePosts = await fetchPosts(newStart);
 
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 3000);
+    if (morePosts.length < limit) {
+      setHasMore(false);
+    }
+
+    setPosts((prevPosts) => [...prevPosts, ...morePosts]);
+    setStart(newStart);
+    setIsLoading(false);
   };
 
   return (
     <Container>
       <PostListContainer>
-        {posts.map(post => (
-          <Post post={post} />
+        {posts.map((post, index) => (
+          <Post key={index} post={post} />
         ))}
       </PostListContainer>
-
-      <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
-          {!isLoading ? 'Load More' : 'Loading...'}
-        </LoadMoreButton>
-      </div>
+      {posts.length > 0 && hasMore && (
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <LoadMoreButton onClick={handleLoadMore} disabled={isLoading}>
+            {!isLoading ? 'Load More' : 'Loading...'}
+          </LoadMoreButton>
+        </div>
+      )}
     </Container>
   );
 }
