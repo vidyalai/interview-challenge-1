@@ -1,15 +1,24 @@
+// user.js
 const axios = require('axios').default;
 
 async function fetchAllUsers() {
-  const { data: users } = await axios.get(
-    'https://jsonplaceholder.typicode.com/users',
-  );
-
-  return users;
+  try {
+    const { data: users } = await axios.get('https://jsonplaceholder.typicode.com/users');
+    return users;
+  } catch (error) {
+    console.error('Error fetching all users:', error.message);
+    throw new Error('Failed to fetch users');
+  }
 }
-// Route to fetch user are https://jsonplaceholder.typicode.com/users/:userId
+
 async function fetchUserById(userId) {
-  return {};
+  try {
+    const { data: user } = await axios.get(`https://jsonplaceholder.typicode.com/users/${userId}`);
+    return user;
+  } catch (error) {
+    console.error(`Error fetching user with ID ${userId}:`, error.message);
+    throw new Error('User not found or API error');
+  }
 }
 
 module.exports = { fetchAllUsers, fetchUserById };
