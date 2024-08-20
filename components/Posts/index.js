@@ -1,9 +1,10 @@
+// Posts.js
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import styled from '@emotion/styled';
 import Post from './Post';
 import Container from '../common/Container';
-import useWindowWidth from '../hooks/useWindowWidth';
+import { useWindowWidth } from '../contexts/useWindowWidth';
 
 const PostListContainer = styled.div(() => ({
   display: 'flex',
@@ -34,39 +35,81 @@ const LoadMoreButton = styled.button(() => ({
 
 export default function Posts() {
   const [posts, setPosts] = useState([]);
+  const [counter, setCounter] = useState(0);
+  const [error, setError] = useState(null);
+  const [user, setUser] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [start, setStart] = useState(0);
+  const [hasMorePosts, setHasMorePosts] = useState(true);
 
-  const { isSmallerDevice } = useWindowWidth();
+  const isSmallerDevice = useWindowWidth();
+
+  const postLimit = isSmallerDevice ? 5 : 10;
 
   useEffect(() => {
     const fetchPost = async () => {
-      const { data: posts } = await axios.get('/api/v1/posts', {
-        params: { start: 0, limit: isSmallerDevice ? 5 : 10 },
-      });
-      setPosts(posts);
+      try {
+        const { data: posts } = await axios.get('/api/v1/posts', {
+          params: { start: 0, limit: postLimit },
+        });
+        setPosts(posts);
+        setStart(postLimit);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      }
     };
 
     fetchPost();
-  }, [isSmallerDevice]);
+  }, [isSmallerDevice, postLimit]);
 
-  const handleClick = () => {
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const { data: usersData } = await axios.get('https://jsonplaceholder.typicode.com/users');
+        setUser(usersData); // Setting usersData as the state
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setError('Failed to load user details');
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  const loadMorePosts = async () => {
+    if (isLoading || !hasMorePosts) return;
+
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const { data: newPosts } = await axios.get('/api/v1/posts', {
+        params: { start, limit: postLimit },
+      });
+
+      setPosts(prevPosts => [...prevPosts, ...newPosts]);
+      setStart(prevStart => prevStart + postLimit);
+
+      if (newPosts.length < postLimit) {
+        setHasMorePosts(false);
+      }
+    } catch (error) {
+      console.error('Error loading more posts:', error);
+    } finally {
       setIsLoading(false);
-    }, 3000);
+    }
   };
 
   return (
     <Container>
       <PostListContainer>
         {posts.map(post => (
-          <Post post={post} />
+          <Post key={post.id} post={post} user={user[post.id - 1]} error={error}/>
         ))}
       </PostListContainer>
 
       <div style={{ display: 'flex', justifyContent: 'center' }}>
-        <LoadMoreButton onClick={handleClick} disabled={isLoading}>
+        <LoadMoreButton onClick={loadMorePosts} disabled={isLoading || !hasMorePosts}>
           {!isLoading ? 'Load More' : 'Loading...'}
         </LoadMoreButton>
       </div>
