@@ -1,5 +1,5 @@
 import PropTypes from 'prop-types';
-import React, { useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import styled from '@emotion/styled';
 
 const PostContainer = styled.div(() => ({
@@ -16,25 +16,23 @@ const CarouselContainer = styled.div(() => ({
 
 const Carousel = styled.div(() => ({
   display: 'flex',
-  overflowX: 'scroll',
+  overflow: 'hidden',
   scrollbarWidth: 'none',
   msOverflowStyle: 'none',
   '&::-webkit-scrollbar': {
     display: 'none',
   },
-  position: 'relative',
 }));
 
 const CarouselItem = styled.div(() => ({
-  flex: '0 0 auto',
+  flex: '0 0 100%',
   scrollSnapAlign: 'start',
 }));
 
 const Image = styled.img(() => ({
-  width: '280px',
+  width: '100%',
   height: 'auto',
   maxHeight: '300px',
-  padding: '10px',
 }));
 
 const Content = styled.div(() => ({
@@ -46,13 +44,15 @@ const Content = styled.div(() => ({
 
 const Button = styled.button(() => ({
   position: 'absolute',
-  bottom: 0,
+  top: '50%',
+  transform: 'translateY(-50%)',
   backgroundColor: 'rgba(255, 255, 255, 0.5)',
   border: 'none',
   color: '#000',
   fontSize: '20px',
   cursor: 'pointer',
   height: '50px',
+  zIndex: 1,
 }));
 
 const PrevButton = styled(Button)`
@@ -63,56 +63,118 @@ const NextButton = styled(Button)`
   right: 10px;
 `;
 
+const UserInfo = styled.div(() => ({
+  display: 'flex',
+  alignItems: 'center',
+  padding: '10px',
+  backgroundColor: '#f1f1f1',
+  borderBottom: '1px solid #ccc',
+}));
+
+const UserInitials = styled.div(() => ({
+  width: '40px',
+  height: '40px',
+  borderRadius: '50%',
+  backgroundColor: '#ccc',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontWeight: 'bold',
+  fontSize: '16px',
+  marginRight: '10px',
+}));
+
+const UserNameEmail = styled.div(() => ({
+  display: 'flex',
+  flexDirection: 'column',
+}));
+
+const UserName = styled.div(() => ({
+  fontWeight: 'bold',
+}));
+
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
 
-  const handleNextClick = () => {
+  useEffect(() => {
     if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: 50,
+      carouselRef.current.scrollTo({
+        left: currentIndex * carouselRef.current.offsetWidth,
         behavior: 'smooth',
       });
     }
+  }, [currentIndex]);
+
+  const handleNextClick = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % post.images.length);
   };
 
   const handlePrevClick = () => {
-    if (carouselRef.current) {
-      carouselRef.current.scrollBy({
-        left: -70,
-        behavior: 'smooth',
-      });
-    }
+    setCurrentIndex((prevIndex) =>
+      prevIndex === 0 ? post.images.length - 1 : prevIndex - 1
+    );
   };
+
+  const getInitials = (name) => {
+    const [firstName, lastName] = name.split(' ');
+    return `${firstName.charAt(0)}${lastName.charAt(0)}`;
+  };
+
+  const userName = post.user ? post.user.name : 'Leanne Graham';
+  const userEmail = post.user ? post.user.email : 'Sincere@april.biz';
+  const userInitials = post.user ? getInitials(post.user.name) : 'LG';
 
   return (
     <PostContainer>
+      <UserInfo>
+        <UserInitials>{userInitials}</UserInitials>
+        <UserNameEmail>
+          <UserName>{userName}</UserName>
+          <div>{userEmail}</div>
+        </UserNameEmail>
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
           {post.images.map((image, index) => (
             <CarouselItem key={index}>
+
               <Image src={image.url} alt={post.title} />
+
             </CarouselItem>
           ))}
         </Carousel>
+
         <PrevButton onClick={handlePrevClick}>&#10094;</PrevButton>
         <NextButton onClick={handleNextClick}>&#10095;</NextButton>
+    
       </CarouselContainer>
+
       <Content>
         <h2>{post.title}</h2>
         <p>{post.body}</p>
       </Content>
+      
     </PostContainer>
   );
 };
 
 Post.propTypes = {
   post: PropTypes.shape({
-    content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
+    title: PropTypes.string.isRequired,
+    body: PropTypes.string.isRequired,
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        url: PropTypes.string.isRequired,
+      })
+    )
+    .isRequired,
+    user: PropTypes.shape({
+      name: PropTypes.string,
+      email: PropTypes.string,
     }),
-    title: PropTypes.any,
-  }),
+
+  }).isRequired,
 };
 
 export default Post;

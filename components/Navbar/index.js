@@ -5,7 +5,7 @@ const Navbar = styled('nav')(() => ({
   backgroundColor: '#333',
   color: '#fff',
   width: '100%',
-  position: 'absolute',
+  position: 'fixed',
   top: 0,
   left: 0,
   zIndex: 1000,
@@ -21,7 +21,6 @@ const ListItem = styled('li')(() => ({
 const Link = styled('a')(() => ({
   color: '#fff',
   textDecoration: 'none',
-
   '&:hover': {
     textDecoration: 'underline',
   },
@@ -36,7 +35,8 @@ const TopNavbar = () => {
             <Link href={'/'}>Home</Link>
           </ListItem>
           <ListItem>
-            <Link href={'/users'}>Users</Link>
+            <Link 
+              href={'/users'}>Users</Link>
           </ListItem>
         </ul>
       </Navbar>
