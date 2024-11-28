@@ -9,6 +9,7 @@ const Navbar = styled('nav')(() => ({
   top: 0,
   left: 0,
   zIndex: 1000,
+  position: 'fixed'
 }));
 
 const ListItem = styled('li')(() => ({
