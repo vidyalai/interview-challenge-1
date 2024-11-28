@@ -57,19 +57,62 @@ const Button = styled.button(() => ({
 
 const PrevButton = styled(Button)`
   left: 10px;
+  top:140px
 `;
 
 const NextButton = styled(Button)`
   right: 10px;
+  top:140px
 `;
+
+const UserName = styled.span(() => ({
+  padding: '10px',
+  boxSizing: 'border-box',
+  marginTop: '10px',
+  marginLeft: '10px',
+  color: 'white',
+  width: '50px',
+  height: '50px',
+  borderRadius: '50%',
+  backgroundColor: 'gray',
+}));
+
+const UserInfo = styled.div(()=>({
+  display:'flex',
+}));
+
+const NameOfUser = styled.div(()=>({
+  margin: '10px'
+}));
+
+const DisplayName = styled.div(()=>({
+  fontSize: '20px',
+  fontWeight:'bold'
+}));
+
+
+
+const Namemail = styled.h4(()=>({
+  display: 'flex',
+  flexDirection: 'column',
+  marginLeft: '20px',
+  color: 'black',
+}));
+
+const Email = styled.p(()=>({
+  color: 'black',
+  fontWeight: 'normal',
+}));
+
+
+
 
 const Post = ({ post }) => {
   const carouselRef = useRef(null);
-
   const handleNextClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: 50,
+        left: 300, /* 50 */
         behavior: 'smooth',
       });
     }
@@ -78,17 +121,34 @@ const Post = ({ post }) => {
   const handlePrevClick = () => {
     if (carouselRef.current) {
       carouselRef.current.scrollBy({
-        left: -70,
+        left: -300,  /*-70 */
         behavior: 'smooth',
       });
     }
   };
 
+  const formatUserName = (name) => {
+    const nameParts = name.split(' ');
+    const firstNameInitial = nameParts[0] ? nameParts[0][0] : '';
+    const lastNameInitial = nameParts[1] ? nameParts[1][0] : '';
+    return `${firstNameInitial}${lastNameInitial}`;
+  };
+
   return (
     <PostContainer>
+      <UserInfo>
+      <UserName>
+      <h3>{formatUserName(post.user.name)}</h3>
+      </UserName>
+      <NameOfUser>
+      <DisplayName>{post.user.name}</DisplayName>
+          <div>{post.user.email}</div>
+      </NameOfUser>
+          
+      </UserInfo>
       <CarouselContainer>
         <Carousel ref={carouselRef}>
-          {post.images.map((image, index) => (
+        {post.images.map((image, index) => (
             <CarouselItem key={index}>
               <Image src={image.url} alt={post.title} />
             </CarouselItem>
@@ -108,9 +168,12 @@ const Post = ({ post }) => {
 Post.propTypes = {
   post: PropTypes.shape({
     content: PropTypes.any,
-    images: PropTypes.shape({
-      map: PropTypes.func,
-    }),
+    images: PropTypes.arrayOf(
+      PropTypes.shape({
+        map: PropTypes.func,
+      })
+    ),
+    
     title: PropTypes.any,
   }),
 };
